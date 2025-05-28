@@ -125,13 +125,13 @@ enum class networks : uint16_t
 {
 	invalid = 0x0,
 	// Low work parameters, publicly known genesis key, dev IP ports
-	nano_dev_network = 0x5241, // 'R', 'A'
+	kshs_dev_network = 0x5241, // 'R', 'A'
 	// Normal work parameters, secret beta genesis key, beta IP ports
-	nano_beta_network = 0x5242, // 'R', 'B'
+	kshs_beta_network = 0x5242, // 'R', 'B'
 	// Normal work parameters, secret live key, live IP ports
-	nano_live_network = 0x5243, // 'R', 'C'
+	kshs_live_network = 0x5243, // 'R', 'C'
 	// Normal work parameters, secret test genesis key, test IP ports
-	nano_test_network = 0x5258, // 'R', 'X'
+	kshs_test_network = 0x5258, // 'R', 'X'
 };
 
 enum class work_version
@@ -332,19 +332,19 @@ public:
 		auto error{ false };
 		if (network_a == "live")
 		{
-			active_network = nano::networks::nano_live_network;
+			active_network = nano::networks::kshs_live_network;
 		}
 		else if (network_a == "beta")
 		{
-			active_network = nano::networks::nano_beta_network;
+			active_network = nano::networks::kshs_beta_network;
 		}
 		else if (network_a == "dev")
 		{
-			active_network = nano::networks::nano_dev_network;
+			active_network = nano::networks::kshs_dev_network;
 		}
 		else if (network_a == "test")
 		{
-			active_network = nano::networks::nano_test_network;
+			active_network = nano::networks::kshs_test_network;
 		}
 		else
 		{
@@ -362,19 +362,19 @@ public:
 
 	bool is_live_network () const
 	{
-		return current_network == nano::networks::nano_live_network;
+		return current_network == nano::networks::kshs_live_network;
 	}
 	bool is_beta_network () const
 	{
-		return current_network == nano::networks::nano_beta_network;
+		return current_network == nano::networks::kshs_beta_network;
 	}
 	bool is_dev_network () const
 	{
-		return current_network == nano::networks::nano_dev_network;
+		return current_network == nano::networks::kshs_dev_network;
 	}
 	bool is_test_network () const
 	{
-		return current_network == nano::networks::nano_test_network;
+		return current_network == nano::networks::kshs_test_network;
 	}
 
 	/** Initial value is ACTIVE_NETWORK compile flag, but can be overridden by a CLI flag */
