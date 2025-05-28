@@ -2343,13 +2343,13 @@ TEST (rpc, krai_from_raw)
 	ASSERT_EQ ("1", response1.get<std::string> ("amount"));
 }
 
-TEST (rpc, nano_to_raw)
+TEST (rpc, kshs_to_raw)
 {
 	nano::test::system system;
 	auto node1 = add_ipc_enabled_node (system);
 	auto const rpc_ctx = add_rpc (system, node1);
 	boost::property_tree::ptree request1;
-	request1.put ("action", "nano_to_raw");
+	request1.put ("action", "kshs_to_raw");
 	request1.put ("amount", "1");
 	auto response1 (wait_response (system, rpc_ctx, request1));
 	ASSERT_EQ (nano::Mxrb_ratio.convert_to<std::string> (), response1.get<std::string> ("amount"));
@@ -2904,7 +2904,7 @@ TEST (rpc, accounts_balances)
 
 	// Adds a valid account string that isn't on the ledger for getting an error response.
 	boost::property_tree::ptree entry2;
-	auto const account_not_found = "nano_1os6txqxyuesnxrtshnfb5or1hesc1647wpk9rsr84pmki6eairwha79hk3j";
+	auto const account_not_found = "kshs_1os6txqxyuesnxrtshnfb5or1hesc1647wpk9rsr84pmki6eairwha79hk3j";
 	entry2.put ("", account_not_found);
 	accounts_l.push_back (std::make_pair ("", entry2));
 
@@ -2945,9 +2945,9 @@ TEST (rpc, accounts_balances_with_errors)
 	request.put ("action", "accounts_balances");
 	boost::property_tree::ptree accounts_l;
 
-	// Adds a bad account string for getting an error response (the nano_ address checksum is wrong)
+	// Adds a bad account string for getting an error response (the kshs_ address checksum is wrong)
 	boost::property_tree::ptree entry;
-	auto const bad_account_number = "nano_3e3j5tkog48pnny9dmfzj1r16pg8t1e76dz5tmac6iq689wyjfpiij4txtd1";
+	auto const bad_account_number = "kshs_3e3j5tkog48pnny9dmfzj1r16pg8t1e76dz5tmac6iq689wyjfpiij4txtd1";
 	entry.put ("", bad_account_number);
 	accounts_l.push_back (std::make_pair ("", entry));
 
@@ -3072,12 +3072,12 @@ TEST (rpc, accounts_representatives_with_errors)
 
 	// Adds an invalid account, malformed number with a wrong checksum.
 	// Got with this formula: key1.substr(0, 40) + key2.substr(40, key2.size()).
-	auto const bad_account_number = "nano_36uccgpjzhjsdbj44wm1y5hyz8gefx3wjpp1jircxt84nopxkxti5bzq1rnz";
+	auto const bad_account_number = "kshs_36uccgpjzhjsdbj44wm1y5hyz8gefx3wjpp1jircxt84nopxkxti5bzq1rnz";
 	entry2.put ("", bad_account_number);
 	accounts_l.push_back (std::make_pair ("", entry2));
 
 	// Adds a valid key but that isn't on the ledger. It won't be found.
-	auto const account_not_found = "nano_1hrts7hcoozxccnffoq9hqhngnn9jz783usapejm57ejtqcyz9dpso1bibuy";
+	auto const account_not_found = "kshs_1hrts7hcoozxccnffoq9hqhngnn9jz783usapejm57ejtqcyz9dpso1bibuy";
 	entry3.put ("", account_not_found);
 	accounts_l.push_back (std::make_pair ("", entry3));
 
@@ -3145,13 +3145,13 @@ TEST (rpc, accounts_frontiers_with_errors)
 
 	// Adds a bad account number for getting an error response.
 	boost::property_tree::ptree entry2;
-	auto const bad_account_number = "nano_3e3j5tkog48pnny9dmfzj1r16pg8t1e76dz5tmac6iq689wyjfpiij4txtd1";
+	auto const bad_account_number = "kshs_3e3j5tkog48pnny9dmfzj1r16pg8t1e76dz5tmac6iq689wyjfpiij4txtd1";
 	entry2.put ("", bad_account_number);
 	accounts_l.push_back (std::make_pair ("", entry2));
 
 	// Adds a valid account that isn't on the ledger for getting an error response.
 	boost::property_tree::ptree entry3;
-	auto const account_not_found = "nano_1os6txqxyuesnxrtshnfb5or1hesc1647wpk9rsr84pmki6eairwha79hk3j";
+	auto const account_not_found = "kshs_1os6txqxyuesnxrtshnfb5or1hesc1647wpk9rsr84pmki6eairwha79hk3j";
 	entry3.put ("", account_not_found);
 	accounts_l.push_back (std::make_pair ("", entry3));
 

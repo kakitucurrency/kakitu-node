@@ -809,7 +809,7 @@ TEST (block_builder, send)
 				 .build (ec);
 	ASSERT_EQ (block->hash ().to_string (), "4560E7B1F3735D082700CFC2852F5D1F378F7418FD24CEF1AD45AB69316F15CD");
 	ASSERT_TRUE (block->source ().is_zero ());
-	ASSERT_EQ (block->destination ().to_account (), "nano_1gys8r4crpxhp94n4uho5cshaho81na6454qni5gu9n53gksoyy1wcd4udyb");
+	ASSERT_EQ (block->destination ().to_account (), "kshs_1gys8r4crpxhp94n4uho5cshaho81na6454qni5gu9n53gksoyy1wcd4udyb");
 	ASSERT_TRUE (block->link ().is_zero ());
 }
 
