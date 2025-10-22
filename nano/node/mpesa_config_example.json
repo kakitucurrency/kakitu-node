@@ -1,0 +1,101 @@
+{
+  "mpesa": {
+    "environment": "sandbox",
+    "consumer_key": "YOUR_CONSUMER_KEY",
+    "consumer_secret": "YOUR_CONSUMER_SECRET",
+    "shortcode": "174379",
+    "passkey": "YOUR_PASSKEY",
+    "initiator_name": "testapi",
+    "security_credential": "YOUR_SECURITY_CREDENTIAL",
+
+    "endpoints": {
+      "sandbox_base_url": "https://sandbox.safaricom.co.ke",
+      "production_base_url": "https://api.safaricom.co.ke"
+    },
+
+    "webhook_urls": {
+      "validation_url": "https://yourdomain.com/mpesa/validate",
+      "confirmation_url": "https://yourdomain.com/mpesa/confirm",
+      "stk_callback_url": "https://yourdomain.com/mpesa/stk-callback",
+      "b2c_result_url": "https://yourdomain.com/mpesa/b2c-result",
+      "b2c_timeout_url": "https://yourdomain.com/mpesa/b2c-timeout"
+    },
+
+    "webhook_server": {
+      "enabled": true,
+      "port": 8080,
+      "host": "0.0.0.0",
+      "ssl_enabled": true,
+      "ssl_cert_path": "/etc/letsencrypt/live/yourdomain.com/fullchain.pem",
+      "ssl_key_path": "/etc/letsencrypt/live/yourdomain.com/privkey.pem"
+    },
+
+    "limits": {
+      "min_deposit_kes": 10,
+      "max_deposit_kes": 150000,
+      "min_withdrawal_kes": 10,
+      "max_withdrawal_kes": 150000,
+      "daily_deposit_limit_kes": 1000000,
+      "daily_withdrawal_limit_kes": 1000000
+    },
+
+    "fees": {
+      "deposit_fee_percentage": 0.0,
+      "withdrawal_fee_percentage": 0.0,
+      "deposit_fee_flat_kes": 0,
+      "withdrawal_fee_flat_kes": 0
+    }
+  },
+
+  "kakitu": {
+    "mint_authority": {
+      "public_key": "MINT_AUTHORITY_PUBLIC_KEY",
+      "private_key_env_var": "KAKITU_MINT_PRIVATE_KEY"
+    },
+
+    "burn_address": "kshs_1111111111111111111111111111111111111111111111111111hifc8npp",
+
+    "exchange_rate": {
+      "base_currency": "KES",
+      "kshs_per_kes": 1.0
+    },
+
+    "reserve_tracking": {
+      "enabled": true,
+      "audit_interval_hours": 24,
+      "auto_reconcile": true,
+      "reconciliation_time": "02:00"
+    },
+
+    "operation_log": {
+      "path": "/var/kakitu/operations.log",
+      "backup_path": "/var/kakitu/backups/",
+      "backup_interval_hours": 24,
+      "export_csv_enabled": true,
+      "export_csv_path": "/var/kakitu/exports/"
+    }
+  },
+
+  "security": {
+    "require_phone_verification": true,
+    "max_pending_transactions": 100,
+    "transaction_timeout_seconds": 300,
+    "ip_whitelist": [
+      "196.201.214.0/24",
+      "196.201.214.206"
+    ],
+    "webhook_secret": "YOUR_WEBHOOK_SECRET"
+  },
+
+  "monitoring": {
+    "enabled": true,
+    "slack_webhook": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+    "email_alerts": [
+      "admin@kakitu.com"
+    ],
+    "alert_on_low_float": true,
+    "low_float_threshold_kes": 50000,
+    "alert_on_failed_transaction": true,
+    "alert_on_reserve_mismatch": true
+  }
+}
