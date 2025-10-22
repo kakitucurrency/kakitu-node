@@ -1,0 +1,142 @@
+{
+  "mpesa": {
+    "environment": "sandbox",
+
+    "credentials": {
+      "consumer_key": "9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
+      "consumer_secret": "bclwIPMNRta40vT5",
+      "shortcode": "174379",
+      "passkey": "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+      "initiator_name": "testapi",
+      "initiator_password": "Safaricom999!*!",
+      "security_credential": "Safcom496!"
+    },
+
+    "endpoints": {
+      "base_url": "https://sandbox.safaricom.co.ke",
+      "oauth_url": "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+      "c2b_register_url": "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl",
+      "stk_push_url": "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+      "stk_query_url": "https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query",
+      "b2c_url": "https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest",
+      "transaction_status_url": "https://sandbox.safaricom.co.ke/mpesa/transactionstatus/v1/query",
+      "account_balance_url": "https://sandbox.safaricom.co.ke/mpesa/accountbalance/v1/query"
+    },
+
+    "test_credentials": {
+      "test_phone_number": "254708374149",
+      "test_amount": 1,
+      "test_account_reference": "KSHS_TEST_001",
+      "test_transaction_desc": "Test Kakitu Deposit"
+    },
+
+    "webhook_urls": {
+      "validation_url": "https://yourdomain.com/mpesa/validate",
+      "confirmation_url": "https://yourdomain.com/mpesa/confirm",
+      "stk_callback_url": "https://yourdomain.com/mpesa/stk-callback",
+      "b2c_result_url": "https://yourdomain.com/mpesa/b2c-result",
+      "b2c_timeout_url": "https://yourdomain.com/mpesa/b2c-timeout",
+      "b2c_queue_timeout_url": "https://yourdomain.com/mpesa/b2c-queue-timeout"
+    },
+
+    "webhook_server": {
+      "enabled": true,
+      "port": 8080,
+      "host": "0.0.0.0",
+      "ssl_enabled": false,
+      "ssl_cert_path": "",
+      "ssl_key_path": ""
+    },
+
+    "limits": {
+      "min_deposit_kes": 1,
+      "max_deposit_kes": 70000,
+      "min_withdrawal_kes": 10,
+      "max_withdrawal_kes": 150000,
+      "daily_deposit_limit_kes": 1000000,
+      "daily_withdrawal_limit_kes": 1000000
+    },
+
+    "fees": {
+      "deposit_fee_percentage": 0.0,
+      "withdrawal_fee_percentage": 0.5,
+      "deposit_fee_flat_kes": 0,
+      "withdrawal_fee_flat_kes": 10
+    },
+
+    "timeouts": {
+      "stk_push_timeout_seconds": 60,
+      "b2c_timeout_seconds": 120,
+      "callback_timeout_seconds": 300
+    }
+  },
+
+  "kakitu": {
+    "mint_authority": {
+      "public_key": "REPLACE_WITH_YOUR_GENERATED_KEY",
+      "private_key_env_var": "KAKITU_MINT_PRIVATE_KEY",
+      "use_test_key": true,
+      "test_private_key": "FOR_SANDBOX_TESTING_ONLY_DO_NOT_USE_IN_PRODUCTION"
+    },
+
+    "burn_address": "kshs_1111111111111111111111111111111111111111111111111111hifc8npp",
+
+    "exchange_rate": {
+      "base_currency": "KES",
+      "kshs_per_kes": 1.0,
+      "minimum_precision": 2
+    },
+
+    "reserve_tracking": {
+      "enabled": true,
+      "audit_interval_hours": 1,
+      "auto_reconcile": true,
+      "reconciliation_time": "02:00",
+      "alert_on_mismatch": true,
+      "mismatch_tolerance_kes": 10
+    },
+
+    "operation_log": {
+      "path": "./data/operations.log",
+      "backup_path": "./data/backups/",
+      "backup_interval_hours": 24,
+      "export_csv_enabled": true,
+      "export_csv_path": "./data/exports/",
+      "max_log_size_mb": 1000,
+      "compress_old_logs": true
+    }
+  },
+
+  "security": {
+    "require_phone_verification": false,
+    "max_pending_transactions": 100,
+    "transaction_timeout_seconds": 300,
+    "enable_ip_whitelist": false,
+    "ip_whitelist": [
+      "127.0.0.1",
+      "::1"
+    ],
+    "webhook_secret": "test_webhook_secret_12345",
+    "require_ssl": false
+  },
+
+  "monitoring": {
+    "enabled": true,
+    "log_level": "debug",
+    "slack_webhook": "",
+    "email_alerts": [],
+    "alert_on_low_float": true,
+    "low_float_threshold_kes": 1000,
+    "alert_on_failed_transaction": true,
+    "alert_on_reserve_mismatch": true,
+    "console_output": true
+  },
+
+  "testing": {
+    "sandbox_mode": true,
+    "mock_mpesa_responses": false,
+    "auto_approve_validation": true,
+    "simulate_delays": false,
+    "test_data_cleanup": true
+  }
+}
