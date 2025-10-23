@@ -146,6 +146,13 @@ public:
 	void work_peers_clear ();
 	void work_set ();
 	void work_validate ();
+	// Kakitu M-Pesa RPC methods
+	void supply_info ();
+	void operation_history ();
+	void verify_operation ();
+	void reserve_status ();
+	void initiate_deposit ();
+	void audit_report ();
 	std::string body;
 	nano::node & node;
 	boost::property_tree::ptree request;

@@ -42,6 +42,9 @@
 #include <nano/node/write_database_queue.hpp>
 #include <nano/secure/ledger.hpp>
 #include <nano/secure/utility.hpp>
+// Kakitu M-Pesa integration
+#include <nano/node/mint_authority.hpp>
+#include <nano/node/mpesa_integration.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/thread/latch.hpp>
@@ -199,6 +202,12 @@ public:
 	nano::block_publisher block_publisher;
 	nano::gap_tracker gap_tracker;
 	nano::process_live_dispatcher process_live_dispatcher;
+
+	// Kakitu M-Pesa integration components
+	std::shared_ptr<nano::mint_authority> kakitu_mint_authority;
+	std::shared_ptr<nano::mpesa_api_client> kakitu_mpesa_client;
+	std::shared_ptr<nano::kakitu_mpesa_bridge> kakitu_mpesa_bridge;
+	std::shared_ptr<nano::mpesa_webhook_server> kakitu_webhook_server;
 
 	std::chrono::steady_clock::time_point const startup_time;
 	std::chrono::seconds unchecked_cutoff = std::chrono::seconds (7 * 24 * 60 * 60); // Week
