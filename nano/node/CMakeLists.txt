@@ -244,10 +244,25 @@ add_library(
   write_database_queue.cpp
   messages.hpp
   messages.cpp
-  xorshift.hpp)
+  xorshift.hpp
+  # Kakitu M-Pesa integration files
+  mint_authority.hpp
+  mint_authority.cpp
+  mpesa_integration.hpp
+  mpesa_integration.cpp
+  mpesa_webhook_server.cpp
+  kakitu_node_integration.cpp)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(DISKHASH diskhash)
+endif()
+
+# Kakitu dependencies
+find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(JSONCPP jsoncpp)
 endif()
 
 target_link_libraries(
@@ -269,7 +284,12 @@ target_link_libraries(
   rocksdb
   ${DISKHASH}
   ${CMAKE_DL_LIBS}
-  ${psapi_lib})
+  ${psapi_lib}
+  # Kakitu dependencies
+  CURL::libcurl
+  OpenSSL::SSL
+  OpenSSL::Crypto
+  ${JSONCPP_LIBRARIES})
 
 target_compile_definitions(
   node PRIVATE -DTAG_VERSION_STRING=${TAG_VERSION_STRING}
@@ -284,3 +304,9 @@ include_directories(${CMAKE_SOURCE_DIR}/submodules/cpptoml/include)
 include_directories(${CMAKE_SOURCE_DIR}/submodules/lmdb)
 include_directories(
   ${CMAKE_SOURCE_DIR}/submodules/nano-pow-server/deps/cpptoml/include)
+
+# Kakitu include directories
+if(JSONCPP_FOUND)
+  include_directories(${JSONCPP_INCLUDE_DIRS})
+endif()
+include_directories(${CMAKE_SOURCE_DIR}/third_party)

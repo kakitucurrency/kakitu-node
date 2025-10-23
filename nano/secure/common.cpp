@@ -113,7 +113,7 @@ nano::ledger_constants::ledger_constants (nano::work_thresholds & work, nano::ne
 	genesis (network_a == nano::networks::kshs_dev_network ? kshs_dev_genesis : network_a == nano::networks::kshs_beta_network ? kshs_beta_genesis
 	: network_a == nano::networks::kshs_test_network                                                                           ? kshs_test_genesis
 																															   : kshs_live_genesis),
-	genesis_amount{ std::numeric_limits<nano::uint128_t>::max () },
+	genesis_amount{ nano::uint128_t("0") },  // Start with zero supply for mint-on-buy model
 	burn_account{},
 	kshs_dev_final_votes_canary_account (dev_public_key_data),
 	kshs_beta_final_votes_canary_account (beta_canary_public_key_data),
@@ -130,10 +130,10 @@ nano::ledger_constants::ledger_constants (nano::work_thresholds & work, nano::ne
 	: network_a == nano::networks::kshs_test_network                                                                                                               ? kshs_test_final_votes_canary_height
 																																								   : kshs_live_final_votes_canary_height)
 {
-	kshs_beta_genesis->sideband_set (nano::block_sideband (kshs_beta_genesis->account (), 0, std::numeric_limits<nano::uint128_t>::max (), 1, nano::seconds_since_epoch (), nano::epoch::epoch_0, false, false, false, nano::epoch::epoch_0));
-	kshs_dev_genesis->sideband_set (nano::block_sideband (kshs_dev_genesis->account (), 0, std::numeric_limits<nano::uint128_t>::max (), 1, nano::seconds_since_epoch (), nano::epoch::epoch_0, false, false, false, nano::epoch::epoch_0));
-	kshs_live_genesis->sideband_set (nano::block_sideband (kshs_live_genesis->account (), 0, std::numeric_limits<nano::uint128_t>::max (), 1, nano::seconds_since_epoch (), nano::epoch::epoch_0, false, false, false, nano::epoch::epoch_0));
-	kshs_test_genesis->sideband_set (nano::block_sideband (kshs_test_genesis->account (), 0, std::numeric_limits<nano::uint128_t>::max (), 1, nano::seconds_since_epoch (), nano::epoch::epoch_0, false, false, false, nano::epoch::epoch_0));
+	kshs_beta_genesis->sideband_set (nano::block_sideband (kshs_beta_genesis->account (), 0, nano::uint128_t("0"), 1, nano::seconds_since_epoch (), nano::epoch::epoch_0, false, false, false, nano::epoch::epoch_0));
+	kshs_dev_genesis->sideband_set (nano::block_sideband (kshs_dev_genesis->account (), 0, nano::uint128_t("0"), 1, nano::seconds_since_epoch (), nano::epoch::epoch_0, false, false, false, nano::epoch::epoch_0));
+	kshs_live_genesis->sideband_set (nano::block_sideband (kshs_live_genesis->account (), 0, nano::uint128_t("0"), 1, nano::seconds_since_epoch (), nano::epoch::epoch_0, false, false, false, nano::epoch::epoch_0));
+	kshs_test_genesis->sideband_set (nano::block_sideband (kshs_test_genesis->account (), 0, nano::uint128_t("0"), 1, nano::seconds_since_epoch (), nano::epoch::epoch_0, false, false, false, nano::epoch::epoch_0));
 
 	nano::link epoch_link_v1;
 	char const * epoch_message_v1 ("epoch v1 block");

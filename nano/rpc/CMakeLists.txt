@@ -13,6 +13,8 @@ add_library(
   rpc_handler.hpp
   rpc_handler.cpp
   rpc_request_processor.hpp
-  rpc_request_processor.cpp)
+  rpc_request_processor.cpp
+  # Kakitu RPC handlers
+  kakitu_rpc.cpp)
 
 target_link_libraries(rpc Boost::beast nano_lib ${OPENSSL_LIBRARIES})
