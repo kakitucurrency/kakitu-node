@@ -3,13 +3,14 @@
     "environment": "sandbox",
 
     "credentials": {
-      "consumer_key": "9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
-      "consumer_secret": "bclwIPMNRta40vT5",
+      "consumer_key": "xIzF24KIHD048b4gUXtAKWgyrRkGhHAfhu1SE0m2K0JRl5CQ",
+      "consumer_secret": "eNUgmb1Qj6HgEp7uAAePTfJBZbt1Mn0TVfZnojXjpXhKYGSbmD6BxyDrVb0tB548",
       "shortcode": "174379",
       "passkey": "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
       "initiator_name": "testapi",
       "initiator_password": "Safaricom999!*!",
-      "security_credential": "Safcom496!"
+      "security_credential": "Safcom496!",
+      "basic_auth": "eEl6RjI0S0lIRDA0OGI0Z1VYdEFLV2d5clJrR2hIQWZodTFTRTBtMkswSlJsNUNROmVOVWdtYjFRajZIZ0VwN3VBQWVQVGZKQlpidDFNbjBUVmZabm9qWGpwWGhLWUdTYm1ENkJ4eURyVmIwdEI1NDg="
     },
 
     "endpoints": {
