@@ -66,6 +66,9 @@ public:
         bool is_sandbox = false
     );
 
+    // Constructor with full config
+    mpesa_api_client(Json::Value const & config);
+
     // ============================================
     // DEPOSIT FLOW (User buys KSHS with KES)
     // ============================================
@@ -171,6 +174,15 @@ private:
     std::string base_url_;
     std::string access_token_;
     uint64_t token_expiry_;
+
+    // Webhook URLs from config
+    std::string stk_callback_url_;
+    std::string b2c_result_url_;
+    std::string b2c_timeout_url_;
+
+    //  Initiator credentials
+    std::string initiator_name_;
+    std::string security_credential_;
 
     // HTTP client
     CURL* curl_handle_;

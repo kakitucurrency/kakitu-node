@@ -88,10 +88,41 @@ mpesa_api_client::mpesa_api_client(
     , shortcode_(shortcode)
     , passkey_(passkey)
     , token_expiry_(0)
+    , stk_callback_url_("https://yourdomain.com/mpesa/stk-callback")
+    , b2c_result_url_("https://yourdomain.com/mpesa/b2c-result")
+    , b2c_timeout_url_("https://yourdomain.com/mpesa/b2c-timeout")
+    , initiator_name_("testapi")
+    , security_credential_("ENCRYPTED_CREDENTIAL")
 {
     base_url_ = is_sandbox ?
         "https://sandbox.safaricom.co.ke" :
         "https://api.safaricom.co.ke";
+
+    curl_handle_ = curl_easy_init();
+}
+
+// Config-based constructor
+mpesa_api_client::mpesa_api_client(Json::Value const & config)
+    : token_expiry_(0)
+{
+    // Load credentials
+    consumer_key_ = config["credentials"]["consumer_key"].asString();
+    consumer_secret_ = config["credentials"]["consumer_secret"].asString();
+    shortcode_ = config["credentials"]["shortcode"].asString();
+    passkey_ = config["credentials"]["passkey"].asString();
+    initiator_name_ = config["credentials"].get("initiator_name", "testapi").asString();
+    security_credential_ = config["credentials"].get("security_credential", "ENCRYPTED_CREDENTIAL").asString();
+
+    // Load environment
+    bool is_sandbox = config["environment"].asString() == "sandbox";
+    base_url_ = is_sandbox ?
+        "https://sandbox.safaricom.co.ke" :
+        "https://api.safaricom.co.ke";
+
+    // Load webhook URLs
+    stk_callback_url_ = config["webhook_urls"].get("stk_callback_url", "https://yourdomain.com/mpesa/stk-callback").asString();
+    b2c_result_url_ = config["webhook_urls"].get("b2c_result_url", "https://yourdomain.com/mpesa/b2c-result").asString();
+    b2c_timeout_url_ = config["webhook_urls"].get("b2c_timeout_url", "https://yourdomain.com/mpesa/b2c-timeout").asString();
 
     curl_handle_ = curl_easy_init();
 }
@@ -286,7 +317,7 @@ std::string mpesa_api_client::initiate_stk_push(
     payload["PartyA"] = phone_number;
     payload["PartyB"] = shortcode_;
     payload["PhoneNumber"] = phone_number;
-    payload["CallBackURL"] = "https://yourdomain.com/mpesa/stk-callback"; // TODO: Make configurable
+    payload["CallBackURL"] = stk_callback_url_;
     payload["AccountReference"] = account_reference;
     payload["TransactionDesc"] = description;
 
@@ -325,15 +356,15 @@ std::string mpesa_api_client::send_b2c_payment(
     std::string const & occasion)
 {
     Json::Value payload;
-    payload["InitiatorName"] = "testapi"; // TODO: Make configurable
-    payload["SecurityCredential"] = "ENCRYPTED_CREDENTIAL"; // TODO: Implement encryption
+    payload["InitiatorName"] = initiator_name_;
+    payload["SecurityCredential"] = security_credential_;
     payload["CommandID"] = "BusinessPayment";
     payload["Amount"] = amount_kes.to_string_dec();
     payload["PartyA"] = shortcode_;
     payload["PartyB"] = phone_number;
     payload["Remarks"] = remarks;
-    payload["QueueTimeOutURL"] = "https://yourdomain.com/mpesa/b2c-timeout";
-    payload["ResultURL"] = "https://yourdomain.com/mpesa/b2c-result";
+    payload["QueueTimeOutURL"] = b2c_timeout_url_;
+    payload["ResultURL"] = b2c_result_url_;
     payload["Occasion"] = occasion;
 
     Json::Value response = make_request("/mpesa/b2c/v1/paymentrequest", "POST", payload);

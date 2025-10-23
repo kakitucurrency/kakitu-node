@@ -151,19 +151,8 @@ private:
         try {
             Json::Value mpesa_config = config_["mpesa"];
 
-            std::string consumer_key = mpesa_config["credentials"]["consumer_key"].asString();
-            std::string consumer_secret = mpesa_config["credentials"]["consumer_secret"].asString();
-            std::string shortcode = mpesa_config["credentials"]["shortcode"].asString();
-            std::string passkey = mpesa_config["credentials"]["passkey"].asString();
-            bool is_sandbox = mpesa_config["environment"].asString() == "sandbox";
-
-            mpesa_client_ = std::make_shared<mpesa_api_client>(
-                consumer_key,
-                consumer_secret,
-                shortcode,
-                passkey,
-                is_sandbox
-            );
+            // Use config-based constructor
+            mpesa_client_ = std::make_shared<mpesa_api_client>(mpesa_config);
 
             // Test authentication
             if (!mpesa_client_->authenticate()) {
