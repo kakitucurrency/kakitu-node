@@ -88,3 +88,6 @@ Testing
 util/build_prep/*/prep.sh
 
 **/.claude/settings.local.json
+build_*.log
+flatc
+rebuild_output.log
