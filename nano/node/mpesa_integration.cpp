@@ -20,12 +20,20 @@ namespace nano {
 
 nano::block_hash mpesa_transaction::calculate_hash() const
 {
-    nano::blake2b_state hash;
+    blake2b_state hash;
     blake2b_init(&hash, sizeof(nano::block_hash));
 
     blake2b_update(&hash, transaction_id.data(), transaction_id.size());
     blake2b_update(&hash, phone_number.data(), phone_number.size());
-    blake2b_update(&hash, amount_kes.bytes.data(), amount_kes.bytes.size());
+
+    // Convert uint128_t to bytes for hashing
+    std::array<uint8_t, 16> amount_bytes;
+    nano::uint128_t temp_amount = amount_kes;
+    for (int i = 0; i < 16; i++) {
+        amount_bytes[15 - i] = static_cast<uint8_t>(temp_amount & 0xFF);
+        temp_amount >>= 8;
+    }
+    blake2b_update(&hash, amount_bytes.data(), amount_bytes.size());
 
     auto type_val = static_cast<uint8_t>(type);
     blake2b_update(&hash, &type_val, sizeof(type_val));
@@ -285,13 +293,12 @@ mpesa_transaction mpesa_api_client::process_c2b_callback(Json::Value const & cal
     tx.bill_ref_number = callback_data.get("BillRefNumber", "").asString();
 
     std::string amount_str = callback_data.get("TransAmount", "0").asString();
-    tx.amount_kes.decode_dec(amount_str);
+    tx.amount_kes = nano::uint128_t(amount_str);
 
     std::string time_str = callback_data.get("TransTime", "").asString();
     // Parse time string (format: YYYYMMDDHHmmss)
     // For simplicity, use current time
     tx.timestamp = std::chrono::system_clock::now().time_since_epoch().count() / 1000000;
-    tx.mpesa_timestamp = tx.timestamp;
 
     tx.status = mpesa_status::COMPLETED;
     tx.proof_hash = tx.calculate_hash();
@@ -313,7 +320,7 @@ std::string mpesa_api_client::initiate_stk_push(
     payload["Password"] = password;
     payload["Timestamp"] = timestamp;
     payload["TransactionType"] = "CustomerPayBillOnline";
-    payload["Amount"] = amount_kes.to_string_dec();
+    payload["Amount"] = amount_kes.convert_to<std::string>();
     payload["PartyA"] = phone_number;
     payload["PartyB"] = shortcode_;
     payload["PhoneNumber"] = phone_number;
@@ -359,7 +366,7 @@ std::string mpesa_api_client::send_b2c_payment(
     payload["InitiatorName"] = initiator_name_;
     payload["SecurityCredential"] = security_credential_;
     payload["CommandID"] = "BusinessPayment";
-    payload["Amount"] = amount_kes.to_string_dec();
+    payload["Amount"] = amount_kes.convert_to<std::string>();
     payload["PartyA"] = shortcode_;
     payload["PartyB"] = phone_number;
     payload["Remarks"] = remarks;

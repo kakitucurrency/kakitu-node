@@ -446,9 +446,9 @@ Json::Value mint_authority::export_audit_report(
 
     // Period statistics
     Json::Value period_stats;
-    period_stats["total_minted_kshs"] = total_minted.to_string_dec();
-    period_stats["total_burned_kshs"] = total_burned.to_string_dec();
-    period_stats["net_change_kshs"] = (total_minted - total_burned).to_string_dec();
+    period_stats["total_minted_kshs"] = total_minted.convert_to<std::string>();
+    period_stats["total_burned_kshs"] = total_burned.convert_to<std::string>();
+    period_stats["net_change_kshs"] = (total_minted - total_burned).convert_to<std::string>();
     period_stats["mint_operations"] = static_cast<Json::Value::UInt>(mint_count);
     period_stats["burn_operations"] = static_cast<Json::Value::UInt>(burn_count);
     report["period_statistics"] = period_stats;
@@ -477,8 +477,8 @@ std::string mint_authority::export_to_csv(
 
         csv << type_str << ","
             << op.timestamp << ","
-            << op.kshs_amount.to_string_dec() << ","
-            << op.fiat_amount_kes.to_string_dec() << ","
+            << op.kshs_amount.convert_to<std::string>() << ","
+            << op.fiat_amount_kes.convert_to<std::string>() << ","
             << op.mpesa_transaction_id << ","
             << op.phone_number << ","
             << account << ","
@@ -578,7 +578,7 @@ nano::block_hash mint_authority::calculate_merkle_root()
     }
 
     // Simple merkle root: hash all operation hashes together
-    nano::blake2b_state hash;
+    blake2b_state hash;
     blake2b_init(&hash, sizeof(nano::block_hash));
 
     for (auto const & op_hash : merkle_tree_) {
