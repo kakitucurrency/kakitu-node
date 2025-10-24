@@ -1,0 +1,79 @@
+{
+  "network": {
+    "type": "kshs_live_network",
+    "description": "Kakitu production network - 1:1 KES backing"
+  },
+  "mpesa": {
+    "environment": "sandbox",
+    "credentials": {
+      "consumer_key": "GTWADFxIpUfDoNikNGqq1C3023evM6Hj",
+      "consumer_secret": "amntGh8L4kJI1eVz",
+      "shortcode": "174379",
+      "passkey": "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+      "initiator_name": "testapi",
+      "security_credential": "Safaricom999!*!"
+    },
+    "webhook_urls": {
+      "stk_callback_url": "https://api.kakitu.com/mpesa/stk-callback",
+      "b2c_result_url": "https://api.kakitu.com/mpesa/b2c-result",
+      "b2c_timeout_url": "https://api.kakitu.com/mpesa/b2c-timeout",
+      "validation_url": "https://api.kakitu.com/mpesa/validate",
+      "confirmation_url": "https://api.kakitu.com/mpesa/confirm"
+    },
+    "webhook_server": {
+      "enabled": true,
+      "port": 8080,
+      "bind_address": "0.0.0.0"
+    },
+    "limits": {
+      "min_deposit_kes": 10,
+      "max_deposit_kes": 150000,
+      "min_withdrawal_kes": 10,
+      "max_withdrawal_kes": 70000,
+      "daily_transaction_limit": 1000000
+    }
+  },
+  "node": {
+    "enable_voting": true,
+    "enable_control": true,
+    "rpc": {
+      "enable": true,
+      "address": "::1",
+      "port": 7076
+    },
+    "websocket": {
+      "enable": true,
+      "address": "::1",
+      "port": 7078
+    },
+    "ipc": {
+      "tcp": {
+        "enable": true,
+        "port": 7077,
+        "io_timeout": 15000
+      }
+    }
+  },
+  "revenue_sharing": {
+    "enabled": true,
+    "node_operator_percentage": 0.5,
+    "distribution_frequency_blocks": 10000,
+    "minimum_payout_kes": 100
+  },
+  "security": {
+    "require_webhook_signature": true,
+    "webhook_secret": "CHANGE_THIS_SECRET_IN_PRODUCTION",
+    "rate_limiting": {
+      "enabled": true,
+      "max_requests_per_minute": 60,
+      "max_deposits_per_hour": 10
+    }
+  },
+  "logging": {
+    "level": "info",
+    "log_to_file": true,
+    "log_file": "kakitu_node.log",
+    "max_log_size_mb": 100,
+    "rotate_logs": true
+  }
+}
