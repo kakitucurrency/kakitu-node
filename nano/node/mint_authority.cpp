@@ -17,16 +17,29 @@ namespace nano {
 nano::block_hash mint_operation::calculate_hash() const
 {
     // Hash all fields to create tamper-evident proof
-    nano::blake2b_state hash;
+    blake2b_state hash;
     blake2b_init(&hash, sizeof(nano::block_hash));
 
     // Hash type
     auto type_val = static_cast<uint8_t>(type);
     blake2b_update(&hash, &type_val, sizeof(type_val));
 
-    // Hash amounts
-    blake2b_update(&hash, kshs_amount.bytes.data(), kshs_amount.bytes.size());
-    blake2b_update(&hash, fiat_amount_kes.bytes.data(), fiat_amount_kes.bytes.size());
+    // Hash amounts - convert uint128_t to bytes
+    std::array<uint8_t, 16> kshs_bytes;
+    nano::uint128_t temp_kshs = kshs_amount;
+    for (int i = 0; i < 16; i++) {
+        kshs_bytes[15 - i] = static_cast<uint8_t>(temp_kshs & 0xFF);
+        temp_kshs >>= 8;
+    }
+    blake2b_update(&hash, kshs_bytes.data(), kshs_bytes.size());
+
+    std::array<uint8_t, 16> kes_bytes;
+    nano::uint128_t temp_kes = fiat_amount_kes;
+    for (int i = 0; i < 16; i++) {
+        kes_bytes[15 - i] = static_cast<uint8_t>(temp_kes & 0xFF);
+        temp_kes >>= 8;
+    }
+    blake2b_update(&hash, kes_bytes.data(), kes_bytes.size());
 
     // Hash accounts
     blake2b_update(&hash, destination.bytes.data(), destination.bytes.size());
@@ -381,8 +394,8 @@ bool mint_authority::load_from_disk(std::string const & data_path)
         file >> root;
         file.close();
 
-        total_kshs_supply_.decode_dec(root["total_kshs_supply"].asString());
-        total_kes_reserves_.decode_dec(root["total_kes_reserves"].asString());
+        total_kshs_supply_ = nano::uint128_t(root["total_kshs_supply"].asString());
+        total_kes_reserves_ = nano::uint128_t(root["total_kes_reserves"].asString());
 
         operation_log_.clear();
         Json::Value operations = root["operations"];
@@ -416,8 +429,8 @@ Json::Value mint_authority::export_audit_report(
 
     // Summary statistics
     Json::Value summary;
-    summary["total_supply_kshs"] = total_kshs_supply_.to_string_dec();
-    summary["total_reserves_kes"] = total_kes_reserves_.to_string_dec();
+    summary["total_supply_kshs"] = total_kshs_supply_.convert_to<std::string>();
+    summary["total_reserves_kes"] = total_kes_reserves_.convert_to<std::string>();
     summary["backing_ratio"] = get_backing_ratio();
     summary["is_balanced"] = verify_reserves();
     report["summary"] = summary;

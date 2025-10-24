@@ -69,6 +69,9 @@ public:
     // Constructor with full config
     mpesa_api_client(Json::Value const & config);
 
+    // Destructor
+    ~mpesa_api_client();
+
     // ============================================
     // DEPOSIT FLOW (User buys KSHS with KES)
     // ============================================
