@@ -8,6 +8,11 @@
 #include <curl/curl.h>
 #include <json/json.h>
 
+// Forward declarations
+namespace httplib {
+    class Server;
+}
+
 namespace nano {
 
 /**
