@@ -214,7 +214,7 @@ Json::Value mpesa_webhook_server::handle_confirmation(Json::Value const & reques
         mpesa_tx.bill_ref_number = request.get("BillRefNumber", "").asString();
 
         std::string amount_str = request.get("TransAmount", "0").asString();
-        mpesa_tx.amount_kes.decode_dec(amount_str);
+        mpesa_tx.amount_kes = nano::uint128_t(amount_str);
 
         mpesa_tx.type = mpesa_transaction_type::C2B_DEPOSIT;
         mpesa_tx.status = mpesa_status::COMPLETED;

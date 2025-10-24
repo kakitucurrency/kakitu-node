@@ -387,7 +387,7 @@ private:
     bool running_;
 
     // HTTP server implementation (using something like cpp-httplib)
-    void setup_routes();
+    void setup_routes(httplib::Server & server);
 };
 
 } // namespace nano
