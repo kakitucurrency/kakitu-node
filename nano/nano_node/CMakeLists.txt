@@ -1,5 +1,14 @@
 add_executable(nano_node daemon.cpp daemon.hpp entry.cpp)
 
+# Kakitu dependencies - jsoncpp for mint_authority.hpp
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(JSONCPP jsoncpp)
+  if(JSONCPP_FOUND)
+    target_include_directories(nano_node PRIVATE ${JSONCPP_INCLUDE_DIRS})
+  endif()
+endif()
+
 target_link_libraries(
   nano_node
   Boost::process
