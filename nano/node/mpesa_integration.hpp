@@ -188,6 +188,7 @@ private:
     CURL* curl_handle_;
 
     // Get OAuth token
+public:
     bool authenticate();
 
     // Make API request

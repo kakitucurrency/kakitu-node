@@ -13,8 +13,15 @@ add_library(
   rpc_handler.hpp
   rpc_handler.cpp
   rpc_request_processor.hpp
-  rpc_request_processor.cpp
-  # Kakitu RPC handlers
-  kakitu_rpc.cpp)
+  rpc_request_processor.cpp)
+
+# Kakitu dependencies
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+  pkg_check_modules(JSONCPP jsoncpp)
+  if(JSONCPP_FOUND)
+    target_include_directories(rpc PRIVATE ${JSONCPP_INCLUDE_DIRS})
+  endif()
+endif()
 
 target_link_libraries(rpc Boost::beast nano_lib ${OPENSSL_LIBRARIES})

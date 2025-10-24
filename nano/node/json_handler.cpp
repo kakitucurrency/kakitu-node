@@ -5504,8 +5504,8 @@ void nano::json_handler::supply_info ()
 	}
 	else
 	{
-		response_l.put ("total_supply", node.kakitu_mint_authority->get_total_supply ().to_string_dec ());
-		response_l.put ("total_reserves", node.kakitu_mint_authority->get_total_reserves ().to_string_dec ());
+		response_l.put ("total_supply", node.kakitu_mint_authority->get_total_supply ().convert_to<std::string> ());
+		response_l.put ("total_reserves", node.kakitu_mint_authority->get_total_reserves ().convert_to<std::string> ());
 		response_l.put ("backing_ratio", std::to_string (node.kakitu_mint_authority->get_backing_ratio ()));
 		response_l.put ("is_balanced", node.kakitu_mint_authority->verify_reserves ());
 	}
@@ -5566,8 +5566,8 @@ void nano::json_handler::operation_history ()
 		                       op.type == nano::mint_operation_type::BURN ? "BURN" : "AUDIT";
 
 		operation.put ("type", type_str);
-		operation.put ("kshs_amount", op.kshs_amount.to_string_dec ());
-		operation.put ("fiat_amount_kes", op.fiat_amount_kes.to_string_dec ());
+		operation.put ("kshs_amount", op.kshs_amount.convert_to<std::string> ());
+		operation.put ("fiat_amount_kes", op.fiat_amount_kes.convert_to<std::string> ());
 		operation.put ("mpesa_transaction_id", op.mpesa_transaction_id);
 		operation.put ("phone_number", op.phone_number);
 		operation.put ("timestamp", std::to_string (op.timestamp));
@@ -5617,8 +5617,8 @@ void nano::json_handler::verify_operation ()
 
 	response_l.put ("valid", valid);
 	response_l.put ("type", op.type == nano::mint_operation_type::MINT ? "MINT" : "BURN");
-	response_l.put ("kshs_amount", op.kshs_amount.to_string_dec ());
-	response_l.put ("fiat_amount_kes", op.fiat_amount_kes.to_string_dec ());
+	response_l.put ("kshs_amount", op.kshs_amount.convert_to<std::string> ());
+	response_l.put ("fiat_amount_kes", op.fiat_amount_kes.convert_to<std::string> ());
 	response_l.put ("mpesa_transaction_id", op.mpesa_transaction_id);
 	response_l.put ("phone_number", op.phone_number);
 	response_l.put ("timestamp", std::to_string (op.timestamp));
@@ -5649,10 +5649,10 @@ void nano::json_handler::reserve_status ()
 
 	auto status = node.kakitu_mpesa_bridge->get_reserve_status ();
 
-	response_l.put ("mpesa_balance_kes", status.mpesa_balance_kes.to_string_dec ());
-	response_l.put ("kshs_total_supply", status.kshs_total_supply.to_string_dec ());
-	response_l.put ("pending_deposits", status.pending_deposits.to_string_dec ());
-	response_l.put ("pending_withdrawals", status.pending_withdrawals.to_string_dec ());
+	response_l.put ("mpesa_balance_kes", status.mpesa_balance_kes.convert_to<std::string> ());
+	response_l.put ("kshs_total_supply", status.kshs_total_supply.convert_to<std::string> ());
+	response_l.put ("pending_deposits", status.pending_deposits.convert_to<std::string> ());
+	response_l.put ("pending_withdrawals", status.pending_withdrawals.convert_to<std::string> ());
 	response_l.put ("is_balanced", status.is_balanced);
 	response_l.put ("backing_ratio", std::to_string (status.backing_ratio));
 
@@ -5677,14 +5677,14 @@ void nano::json_handler::initiate_deposit ()
 		return;
 	}
 
-	nano::uint128_t amount = amount_impl ();
+	nano::amount amount = amount_impl ();
 	if (ec)
 	{
 		response_errors ();
 		return;
 	}
 
-	std::string checkout_id = node.kakitu_mpesa_bridge->initiate_deposit (phone_number, account, amount);
+	std::string checkout_id = node.kakitu_mpesa_bridge->initiate_deposit (phone_number, account, amount.number ());
 
 	if (checkout_id.empty ())
 	{
