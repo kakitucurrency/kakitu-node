@@ -85,8 +85,8 @@ Json::Value mint_operation::to_json() const
     json["type"] = type_str;
 
     // Amounts
-    json["kshs_amount"] = kshs_amount.to_string_dec();
-    json["fiat_amount_kes"] = fiat_amount_kes.to_string_dec();
+    json["kshs_amount"] = kshs_amount.convert_to<std::string>();
+    json["fiat_amount_kes"] = fiat_amount_kes.convert_to<std::string>();
 
     // Accounts
     json["destination"] = destination.to_account();
@@ -127,8 +127,8 @@ mint_operation mint_operation::from_json(Json::Value const & json)
     else if (type_str == "AUDIT") op.type = mint_operation_type::AUDIT;
 
     // Amounts
-    op.kshs_amount.decode_dec(json["kshs_amount"].asString());
-    op.fiat_amount_kes.decode_dec(json["fiat_amount_kes"].asString());
+    op.kshs_amount= nano::uint128_t(json["kshs_amount"].asString());
+    op.fiat_amount_kes= nano::uint128_t(json["fiat_amount_kes"].asString());
 
     // Accounts
     op.destination.decode_account(json["destination"].asString());
@@ -366,8 +366,8 @@ bool mint_authority::save_to_disk(std::string const & data_path)
     try {
         Json::Value root;
         root["version"] = 1;
-        root["total_kshs_supply"] = total_kshs_supply_.to_string_dec();
-        root["total_kes_reserves"] = total_kes_reserves_.to_string_dec();
+        root["total_kshs_supply"] = total_kshs_supply_.convert_to<std::string>();
+        root["total_kes_reserves"] = total_kes_reserves_.convert_to<std::string>();
         root["mint_authority_public_key"] = authority_key_.pub.to_account();
 
         Json::Value operations(Json::arrayValue);
