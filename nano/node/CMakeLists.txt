@@ -250,8 +250,8 @@ add_library(
   mint_authority.cpp
   mpesa_integration.hpp
   mpesa_integration.cpp
-  mpesa_webhook_server.cpp
-  kakitu_node_integration.cpp)
+  mpesa_webhook_server.hpp
+  mpesa_webhook_server.cpp)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(DISKHASH diskhash)
@@ -263,6 +263,9 @@ find_package(OpenSSL REQUIRED)
 find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
   pkg_check_modules(JSONCPP jsoncpp)
+  if(JSONCPP_FOUND)
+    include_directories(${JSONCPP_INCLUDE_DIRS})
+  endif()
 endif()
 
 target_link_libraries(

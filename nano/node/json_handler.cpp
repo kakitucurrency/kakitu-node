@@ -5444,6 +5444,13 @@ ipc_json_handler_no_arg_func_map create_ipc_json_handler_no_arg_func_map ()
 	no_arg_funcs.emplace ("work_peers_clear", &nano::json_handler::work_peers_clear);
 	no_arg_funcs.emplace ("populate_backlog", &nano::json_handler::populate_backlog);
 	no_arg_funcs.emplace ("debug_bootstrap_priority_info", &nano::json_handler::debug_bootstrap_priority_info);
+	// Kakitu M-Pesa RPC handlers
+	no_arg_funcs.emplace ("supply_info", &nano::json_handler::supply_info);
+	no_arg_funcs.emplace ("operation_history", &nano::json_handler::operation_history);
+	no_arg_funcs.emplace ("verify_operation", &nano::json_handler::verify_operation);
+	no_arg_funcs.emplace ("reserve_status", &nano::json_handler::reserve_status);
+	no_arg_funcs.emplace ("initiate_deposit", &nano::json_handler::initiate_deposit);
+	no_arg_funcs.emplace ("audit_report", &nano::json_handler::audit_report);
 	return no_arg_funcs;
 }
 

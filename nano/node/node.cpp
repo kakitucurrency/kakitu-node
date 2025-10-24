@@ -465,6 +465,99 @@ nano::node::node (boost::asio::io_context & io_ctx_a, boost::filesystem::path co
 				std::exit (1);
 			}
 		}
+
+		// Initialize Kakitu M-Pesa integration
+		std::string kakitu_config_path = (application_path / "kakitu_config.json").string ();
+		std::ifstream kakitu_config_file (kakitu_config_path);
+
+		if (kakitu_config_file.good ())
+		{
+			try
+			{
+				Json::Value kakitu_config;
+				Json::CharReaderBuilder builder;
+				std::string errs;
+
+				if (Json::parseFromStream (builder, kakitu_config_file, &kakitu_config, &errs))
+				{
+					kakitu_config_file.close ();
+
+					// Load mint authority from environment variable
+					const char* priv_key_hex = std::getenv ("KAKITU_MINT_PRIVATE_KEY");
+					if (priv_key_hex)
+					{
+						nano::raw_key prv;
+						if (!prv.decode_hex (priv_key_hex))
+						{
+							nano::keypair authority_key (std::move (prv));
+
+							// Try to load existing mint authority
+							std::string authority_data_path = (application_path / "mint_authority.json").string ();
+							std::ifstream authority_file (authority_data_path);
+
+							if (authority_file.good ())
+							{
+								authority_file.close ();
+								kakitu_mint_authority = nano::mint_authority::load_from_disk (authority_data_path, authority_key);
+								logger.always_log ("Kakitu: Loaded existing mint authority");
+							}
+							else
+							{
+								kakitu_mint_authority = std::make_shared<nano::mint_authority> (authority_key);
+								logger.always_log ("Kakitu: Created new mint authority");
+							}
+
+							// Initialize M-Pesa client
+							kakitu_mpesa_client = std::make_shared<nano::mpesa_api_client> (kakitu_config["mpesa"]);
+
+							// Authenticate
+							if (kakitu_mpesa_client->authenticate ())
+							{
+								logger.always_log ("Kakitu: M-Pesa client authenticated");
+
+								// Initialize bridge
+								kakitu_mpesa_bridge = std::make_shared<nano::kakitu_mpesa_bridge> (kakitu_mpesa_client, kakitu_mint_authority);
+
+								// Start webhook server if enabled
+								if (kakitu_config["mpesa"]["webhook_server"]["enabled"].asBool ())
+								{
+									uint16_t webhook_port = kakitu_config["mpesa"]["webhook_server"]["port"].asUInt ();
+									kakitu_webhook_server = std::make_shared<nano::mpesa_webhook_server> (kakitu_mpesa_bridge, webhook_port);
+									kakitu_webhook_server->start ();
+									logger.always_log ("Kakitu: Webhook server started on port ", webhook_port);
+								}
+
+								logger.always_log ("Kakitu: M-Pesa integration initialized successfully");
+							}
+							else
+							{
+								logger.always_log ("Kakitu: Warning - M-Pesa authentication failed");
+							}
+						}
+						else
+						{
+							logger.always_log ("Kakitu: Warning - Invalid KAKITU_MINT_PRIVATE_KEY format");
+						}
+					}
+					else
+					{
+						logger.always_log ("Kakitu: Info - KAKITU_MINT_PRIVATE_KEY not set, features disabled");
+					}
+				}
+				else
+				{
+					logger.always_log ("Kakitu: Warning - Failed to parse kakitu_config.json: ", errs);
+				}
+			}
+			catch (std::exception const & e)
+			{
+				logger.always_log ("Kakitu: Initialization error: ", e.what ());
+			}
+		}
+		else
+		{
+			logger.always_log ("Kakitu: Info - kakitu_config.json not found, features disabled");
+		}
 	}
 	node_initialized_latch.count_down ();
 }
