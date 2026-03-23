@@ -15,9 +15,8 @@ namespace
 char const * preconfigured_peers_key = "preconfigured_peers";
 char const * signature_checker_threads_key = "signature_checker_threads";
 char const * pow_sleep_interval_key = "pow_sleep_interval";
-std::string const default_live_peer_network = nano::get_env_or_default ("NANO_DEFAULT_PEER", "peering.nano.org");
-std::string const default_beta_peer_network = nano::get_env_or_default ("NANO_DEFAULT_PEER", "peering-beta.nano.org");
-std::string const default_test_peer_network = nano::get_env_or_default ("NANO_DEFAULT_PEER", "peering-test.nano.org");
+std::string const default_live_peer_network = nano::get_env_or_default ("KAKITU_DEFAULT_PEER", "peering.kakitu.org");
+std::string const default_test_peer_network = nano::get_env_or_default ("KAKITU_DEFAULT_PEER", "peering-test.kakitu.org");
 }
 
 nano::node_config::node_config (nano::network_params & network_params) :
@@ -50,24 +49,9 @@ nano::node_config::node_config (const std::optional<uint16_t> & peering_port_a, 
 			enable_voting = true;
 			preconfigured_representatives.push_back (network_params.ledger.genesis->account ());
 			break;
-		case nano::networks::kshs_beta_network:
-		{
-			preconfigured_peers.emplace_back (default_beta_peer_network);
-			nano::account offline_representative;
-			release_assert (!offline_representative.decode_account ("kshs_1defau1t9off1ine9rep99999999999999999999999999999999wgmuzxxy"));
-			preconfigured_representatives.emplace_back (offline_representative);
-			break;
-		}
 		case nano::networks::kshs_live_network:
 			preconfigured_peers.emplace_back (default_live_peer_network);
-			preconfigured_representatives.emplace_back ("A30E0A32ED41C8607AA9212843392E853FCBCB4E7CB194E35C94F07F91DE59EF");
-			preconfigured_representatives.emplace_back ("67556D31DDFC2A440BF6147501449B4CB9572278D034EE686A6BEE29851681DF");
-			preconfigured_representatives.emplace_back ("5C2FBB148E006A8E8BA7A75DD86C9FE00C83F5FFDBFD76EAA09531071436B6AF");
-			preconfigured_representatives.emplace_back ("AE7AC63990DAAAF2A69BF11C913B928844BF5012355456F2F164166464024B29");
-			preconfigured_representatives.emplace_back ("BD6267D6ECD8038327D2BCC0850BDF8F56EC0414912207E81BCF90DFAC8A4AAA");
-			preconfigured_representatives.emplace_back ("2399A083C600AA0572F5E36247D978FCFC840405F8D4B6D33161C0066A55F431");
-			preconfigured_representatives.emplace_back ("2298FAB7C61058E77EA554CB93EDEEDA0692CBFCC540AB213B2836B29029E23A");
-			preconfigured_representatives.emplace_back ("3FE80B4BC842E82C1C18ABFEEC47EA989E63953BC82AC411F304D13833D52A56");
+			preconfigured_representatives.emplace_back (network_params.ledger.genesis->account ());
 			break;
 		case nano::networks::kshs_test_network:
 			preconfigured_peers.push_back (default_test_peer_network);
@@ -137,7 +121,7 @@ nano::error nano::node_config::serialize_toml (nano::tomlconfig & toml) const
 		work_peers_l->push_back (boost::str (boost::format ("%1%:%2%") % i->first % i->second));
 	}
 
-	auto preconfigured_peers_l (toml.create_array ("preconfigured_peers", "A list of \"address\" (hostname or ipv6 notation ip address) entries to identify preconfigured peers.\nThe contents of the NANO_DEFAULT_PEER environment variable are added to preconfigured_peers."));
+	auto preconfigured_peers_l (toml.create_array ("preconfigured_peers", "A list of \"address\" (hostname or ipv6 notation ip address) entries to identify preconfigured peers.\nThe contents of the KAKITU_DEFAULT_PEER environment variable are added to preconfigured_peers."));
 	for (auto i (preconfigured_peers.begin ()), n (preconfigured_peers.end ()); i != n; ++i)
 	{
 		preconfigured_peers_l->push_back (*i);
