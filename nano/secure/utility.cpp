@@ -15,16 +15,16 @@ boost::filesystem::path nano::working_path (nano::networks network)
 			release_assert (false);
 			break;
 		case nano::networks::kshs_dev_network:
-			result /= "NanoDev";
+			result /= "KakituDev";
 			break;
 		case nano::networks::kshs_beta_network:
-			result /= "NanoBeta";
+			result /= "KakituBeta";
 			break;
 		case nano::networks::kshs_live_network:
-			result /= "Nano";
+			result /= "Kakitu";
 			break;
 		case nano::networks::kshs_test_network:
-			result /= "NanoTest";
+			result /= "KakituTest";
 			break;
 	}
 	return result;
