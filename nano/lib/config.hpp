@@ -408,5 +408,5 @@ bool slow_instrumentation ();
 bool is_sanitizer_build ();
 
 /** Set the active network to the dev network */
-void force_nano_dev_network ();
+void force_kshs_dev_network ();
 }

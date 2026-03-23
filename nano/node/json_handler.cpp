@@ -124,13 +124,13 @@ void nano::json_handler::process_request (bool unsafe_a)
 			{
 				mnano_to_raw ();
 			}
-			else if (action == "nano_to_raw")
+			else if (action == "kshs_to_raw")
 			{
-				nano_to_raw ();
+				kshs_to_raw ();
 			}
-			else if (action == "raw_to_nano")
+			else if (action == "raw_to_kshs")
 			{
-				raw_to_nano ();
+				raw_to_kshs ();
 			}
 			else if (action == "password_valid")
 			{
@@ -2887,7 +2887,7 @@ void nano::json_handler::mnano_to_raw (nano::uint128_t ratio)
 	response_errors ();
 }
 
-void nano::json_handler::nano_to_raw ()
+void nano::json_handler::kshs_to_raw ()
 {
 	auto amount (amount_impl ());
 	if (!ec)
@@ -2905,7 +2905,7 @@ void nano::json_handler::nano_to_raw ()
 	response_errors ();
 }
 
-void nano::json_handler::raw_to_nano ()
+void nano::json_handler::raw_to_kshs ()
 {
 	auto amount (amount_impl ());
 	if (!ec)

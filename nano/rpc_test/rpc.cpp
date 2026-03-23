@@ -2355,13 +2355,13 @@ TEST (rpc, kshs_to_raw)
 	ASSERT_EQ (nano::Mxrb_ratio.convert_to<std::string> (), response1.get<std::string> ("amount"));
 }
 
-TEST (rpc, raw_to_nano)
+TEST (rpc, raw_to_kshs)
 {
 	nano::test::system system;
 	auto node1 = add_ipc_enabled_node (system);
 	auto const rpc_ctx = add_rpc (system, node1);
 	boost::property_tree::ptree request1;
-	request1.put ("action", "raw_to_nano");
+	request1.put ("action", "raw_to_kshs");
 	request1.put ("amount", nano::Mxrb_ratio.convert_to<std::string> ());
 	auto response1 (wait_response (system, rpc_ctx, request1));
 	ASSERT_EQ ("1", response1.get<std::string> ("amount"));

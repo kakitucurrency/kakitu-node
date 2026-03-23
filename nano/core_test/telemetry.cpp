@@ -520,8 +520,8 @@ TEST (telemetry, DISABLED_mismatched_genesis)
 	auto & node1 = *system.add_node (node_flags);
 
 	// Set up a node with different genesis
-	nano::network_params network_params{ nano::networks::nano_dev_network };
-	network_params.ledger.genesis = network_params.ledger.nano_live_genesis;
+	nano::network_params network_params{ nano::networks::kshs_dev_network };
+	network_params.ledger.genesis = network_params.ledger.kshs_live_genesis;
 	nano::node_config node_config{ network_params };
 	node_flags.disable_providing_telemetry_metrics = false;
 	auto & node2 = *system.add_node (node_config, node_flags);

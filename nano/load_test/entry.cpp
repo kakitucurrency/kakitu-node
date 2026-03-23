@@ -29,7 +29,7 @@ using socket_type = boost::asio::basic_stream_socket<boost::asio::ip::tcp, boost
 
 namespace nano
 {
-void force_nano_dev_network ();
+void force_kshs_dev_network ();
 }
 
 namespace beast = boost::beast;
@@ -489,7 +489,7 @@ account_info account_info_rpc (boost::asio::io_context & ioc, tcp::resolver::res
 /** This launches a node and fires a lot of send/recieve RPC requests at it (configurable), then other nodes are tested to make sure they observe these blocks as well. */
 int main (int argc, char * const * argv)
 {
-	nano::force_nano_dev_network ();
+	nano::force_kshs_dev_network ();
 
 	boost::program_options::options_description description ("Command line options");
 

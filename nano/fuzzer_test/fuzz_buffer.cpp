@@ -9,7 +9,7 @@
 
 namespace nano
 {
-void force_nano_dev_network ();
+void force_kshs_dev_network ();
 }
 namespace
 {
@@ -61,7 +61,7 @@ void fuzz_message_parser (uint8_t const * Data, size_t Size)
 	static bool initialized = false;
 	if (!initialized)
 	{
-		nano::force_nano_dev_network ();
+		nano::force_kshs_dev_network ();
 		initialized = true;
 		system0 = std::make_shared<nano::test::system> (1);
 		node0 = system0->nodes[0];

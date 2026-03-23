@@ -265,7 +265,7 @@ std::array<uint8_t, 2> test_magic_number ()
 	return ret;
 }
 
-void force_nano_dev_network ()
+void force_kshs_dev_network ()
 {
 	nano::network_constants::set_active_network (nano::networks::kshs_dev_network);
 }

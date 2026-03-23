@@ -23,7 +23,8 @@
 | `nano/node/nodeconfig.cpp` | Peer hostnames, env var rename, preconfigured reps, remove beta case |
 | `nano/node/cli.cpp` | Config comment URL |
 | `nano/nano_node/daemon.cpp` | Startup text |
-| `nano/nano_node/entry.cpp` | Windows event log key |
+| `nano/nano_node/entry.cpp` | Windows event log key (error message string) |
+| `nano/lib/plat/windows/registry.cpp` | Windows event log registry key check |
 | `nano/nano_node/CMakeLists.txt` | `nano_node` → `kakitu_node` |
 | `nano/nano_rpc/CMakeLists.txt` | `nano_rpc` → `kakitu_rpc` |
 | `CMakeLists.txt` | Project name, binary names, package metadata, service name, remove beta conditionals |
@@ -36,6 +37,7 @@
 | `rep_weights_beta.bin` | Truncate to zero bytes |
 | `.github/workflows/live_artifacts.yml` | Default repo → `kakitucurrency/kakitu-node` |
 | `.github/workflows/test_network_artifacts.yml` | Default repo → `kakitucurrency/kakitu-node` |
+| `.github/workflows/develop_branch_dockers_deploy.yml` | Repository guard + image name → kakitucurrency |
 | `.github/workflows/beta_artifacts.yml` | Delete |
 | `.github/workflows/beta_artifacts_latest_release_branch.yml` | Delete |
 | `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` | Replace Nano Foundation contact/URL refs |
@@ -352,7 +354,7 @@ Replace every `NANO_TEST_*` environment variable name with `KAKITU_TEST_*`.
   auto initialization_text = "Starting up Kakitu node...";
   ```
 
-- [ ] **Step 6.2 — Update Windows event log registry key**
+- [ ] **Step 6.2 — Update Windows event log error message string**
 
   In `nano/nano_node/entry.cpp`, search for:
   ```bash
@@ -360,10 +362,18 @@ Replace every `NANO_TEST_*` environment variable name with `KAKITU_TEST_*`.
   ```
   Replace `EventLog\\Nano\\Nano` with `EventLog\\Kakitu\\Kakitu` in the found line.
 
-- [ ] **Step 6.3 — Commit**
+- [ ] **Step 6.3 — Update Windows event log registry check**
+
+  In `nano/lib/plat/windows/registry.cpp`, search for:
+  ```bash
+  grep -n "EventLog.*Nano" nano/lib/plat/windows/registry.cpp
+  ```
+  Replace the registry key string `SYSTEM\\CurrentControlSet\\Services\\EventLog\\Nano\\Nano` with `SYSTEM\\CurrentControlSet\\Services\\EventLog\\Kakitu\\Kakitu`.
+
+- [ ] **Step 6.4 — Commit**
 
   ```bash
-  git add nano/nano_node/daemon.cpp nano/nano_node/entry.cpp
+  git add nano/nano_node/daemon.cpp nano/nano_node/entry.cpp nano/lib/plat/windows/registry.cpp
   git commit -m "feat: rebrand startup text and Windows event log key to Kakitu"
   ```
 
@@ -485,9 +495,10 @@ Replace every `NANO_TEST_*` environment variable name with `KAKITU_TEST_*`.
     set(CPACK_NSIS_PACKAGE_NAME "Kakitu-Test" CACHE STRING "" FORCE)
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "kakitu-test" CACHE STRING "" FORCE)
     set(KAKITU_SERVICE "kakitu-test.service")
-    set(NANO_PREFIX "Test")
+    set(KAKITU_PREFIX "Test")
   endif()
   ```
+  **Note:** `NANO_PREFIX` is renamed to `KAKITU_PREFIX` everywhere (both in this block and wherever `${NANO_PREFIX}` is used elsewhere in `CMakeLists.txt`).
 
 - [ ] **Step 7.5 — Update all `nano_node`/`nano_rpc` references in root CMakeLists.txt**
 
@@ -499,7 +510,19 @@ Replace every `NANO_TEST_*` environment variable name with `KAKITU_TEST_*`.
   - `nano_rpc` → `kakitu_rpc`
   - `nano_wallet` → `kakitu_wallet`
   - `NANO_SERVICE` → `KAKITU_SERVICE`
+  - `NANO_PREFIX` → `KAKITU_PREFIX`
   - `nanocurrency` in install/package contexts → `kakitu`
+
+- [ ] **Step 7.5a — Verify `nano_wallet` rename is complete**
+
+  The root `CMakeLists.txt` may reference `nano_wallet` in `install(TARGETS ...)` or `add_dependencies(...)` lines. Check:
+  ```bash
+  grep -n "nano_wallet" CMakeLists.txt nano/nano_node/CMakeLists.txt
+  ```
+  Replace every occurrence with `kakitu_wallet`. Also check whether a `nano/nano_wallet/` subdirectory exists and contains its own `CMakeLists.txt` — if so, replace `nano_wallet` → `kakitu_wallet` in that file too:
+  ```bash
+  ls nano/nano_wallet/ 2>/dev/null && grep -n "nano_wallet" nano/nano_wallet/CMakeLists.txt
+  ```
 
 - [ ] **Step 7.6 — Attempt build to verify CMake changes compile**
 
@@ -514,7 +537,9 @@ Replace every `NANO_TEST_*` environment variable name with `KAKITU_TEST_*`.
 
   ```bash
   git add nano/nano_node/CMakeLists.txt nano/nano_rpc/CMakeLists.txt CMakeLists.txt
-  git commit -m "feat: rename binaries nano_node/nano_rpc -> kakitu_node/kakitu_rpc, rebrand CMake metadata"
+  # Include nano_wallet CMakeLists.txt if it exists:
+  git add nano/nano_wallet/CMakeLists.txt 2>/dev/null || true
+  git commit -m "feat: rename binaries nano_node/nano_rpc/nano_wallet -> kakitu_*, rebrand CMake metadata"
   ```
 
 ---
@@ -659,6 +684,16 @@ These files contain Nano network representative weight data. Leaving them in pla
 
   Same as above — replace `nanocurrency/nano-node` default with `kakitucurrency/kakitu-node`.
 
+- [ ] **Step 10.3a — Update `develop_branch_dockers_deploy.yml`**
+
+  ```bash
+  grep -n "nanocurrency\|nano-node\|nano\.org" .github/workflows/develop_branch_dockers_deploy.yml
+  ```
+  This file builds and pushes Docker images on every push to the develop branch. Update:
+  - Any `if: ${{ github.repository == 'nanocurrency/nano-node' }}` guard → `'kakitucurrency/kakitu-node'`
+  - Any `nanocurrency/nano` Docker image name → `kakitucurrency/kakitu`
+  - Any `nano-node` references in image tags or registry paths → `kakitu-node`
+
 - [ ] **Step 10.4 — Update `SECURITY.md`**
 
   Replace all `nano.org` contact email/URL references with `kakitu.org` equivalents. Replace Nano Foundation security team members with Kakitu team. Remove references to the external Nano security audit PDF.
@@ -754,11 +789,17 @@ Before this step, the codebase compiles but still has Nano genesis data. That is
 
   Start a dev node (uses low PoW — fine for generating the genesis block structure, but the final work must be computed at live difficulty):
   ```bash
-  # Start dev node in background
-  ./kakitu_node --network=dev --daemon &
+  # Start dev node in background with RPC enabled
+  ./kakitu_node --network=dev --daemon \
+    --config rpc.enable=true \
+    --config rpc.port=45000 &
 
   # Wait for node to start
   sleep 3
+
+  # Confirm RPC is responding
+  curl -s -d '{"action":"version"}' http://localhost:45000
+  # Expected: JSON with "node_vendor" field — if connection refused, wait 3 more seconds
 
   # Generate PoW for the genesis open block
   # Root for an open block = the account's public key
@@ -788,8 +829,10 @@ Before this step, the codebase compiles but still has Nano genesis data. That is
 
   **Verify the block is valid** by asking the dev node to process it:
   ```bash
-  # Restart dev node
-  ./kakitu_node --network=dev --daemon &
+  # Restart dev node with RPC enabled
+  ./kakitu_node --network=dev --daemon \
+    --config rpc.enable=true \
+    --config rpc.port=45000 &
   sleep 3
   curl -s -d '{"action":"process","block":<BLOCK_JSON>}' http://localhost:45000
   # Expected: {"hash": "<block_hash>"}  (no "error" field)
@@ -838,10 +881,12 @@ This task uses the keypairs generated in Task 11. Do not proceed without them.
   ```
   Replace `xrb_3e3j5tkog48pnny9dmfzj1r16pg8t1e76dz5tmac6iq689wyjfpiij4txtdo` with the same address re-encoded as `kshs_`. Get the kshs_ version:
   ```bash
-  # The dev public key is B0311EA55708D6A53C75CDBF88300259C6D018522FE3D4D0A242E431F9E8B6D0
-  # Use key_expand to get the kshs_ address:
-  ./kakitu_node --network=dev --daemon &
-  sleep 2
+  # 34F0A37AAD... is the dev PRIVATE key; B0311EA5... is the derived public key
+  # Use key_expand (takes private key) to get the kshs_ address:
+  ./kakitu_node --network=dev --daemon \
+    --config rpc.enable=true \
+    --config rpc.port=45000 &
+  sleep 3
   curl -s -d '{"action":"key_expand","key":"34F0A37AAD20F4A260F0A5B3CB3D7FB50673212263E58A380BC10474BB039CE4"}' \
     http://localhost:45000
   pkill kakitu_node
@@ -961,7 +1006,9 @@ This task uses the keypairs generated in Task 11. Do not proceed without them.
 - [ ] **Step 13.2 — Verify genesis block loads correctly**
 
   ```bash
-  ./kakitu_node --network=dev --daemon &
+  ./kakitu_node --network=dev --daemon \
+    --config rpc.enable=true \
+    --config rpc.port=45000 &
   sleep 3
   curl -s -d '{"action":"block_info","hash":"<LIVE_GENESIS_BLOCK_HASH>"}' http://localhost:45000
   pkill kakitu_node
