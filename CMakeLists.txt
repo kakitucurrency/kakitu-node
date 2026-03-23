@@ -14,7 +14,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET
     12
     CACHE STRING "")
 
-project(nano-node)
+project(kakitu-node)
 
 # Get the latest abbreviated commit hash of the working branch
 execute_process(
@@ -50,7 +50,7 @@ if(CI_BUILD AND CI_VERSION_PRE_RELEASE)
 else()
   set(CPACK_PACKAGE_VERSION_PRE_RELEASE "0")
 endif()
-set(CPACK_PACKAGE_VENDOR "Nano Currency")
+set(CPACK_PACKAGE_VENDOR "Kakitu Currency")
 
 if(CI_BUILD)
   set(TAG_VERSION_STRING "$ENV{CI_TAG}")
@@ -166,42 +166,29 @@ set_property(
   CACHE ACTIVE_NETWORK PROPERTY STRINGS kshs_dev_network kshs_beta_network
                                 kshs_live_network kshs_test_network)
 set(CPACK_PACKAGE_NAME
-    "nano-node"
+    "kakitu-node"
     CACHE STRING "" FORCE)
 set(CPACK_NSIS_PACKAGE_NAME
-    "Nano"
+    "Kakitu"
     CACHE STRING "" FORCE)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY
-    "nanocurrency"
+    "kakitu"
     CACHE STRING "" FORCE)
-set(NANO_SERVICE "nanocurrency.service")
-set(NANO_PREFIX "")
-if("${ACTIVE_NETWORK}" MATCHES "kshs_beta_network")
-  project("nano-node-beta")
+set(KAKITU_SERVICE "kakitu.service")
+set(KAKITU_PREFIX "")
+if("${ACTIVE_NETWORK}" MATCHES "kshs_test_network")
+  project("kakitu-node-test")
   set(CPACK_PACKAGE_NAME
-      "nano-node-beta"
+      "kakitu-node-test"
       CACHE STRING "" FORCE)
   set(CPACK_NSIS_PACKAGE_NAME
-      "Nano-Beta"
+      "Kakitu-Test"
       CACHE STRING "" FORCE)
   set(CPACK_PACKAGE_INSTALL_DIRECTORY
-      "nanocurrency-beta"
+      "kakitu-test"
       CACHE STRING "" FORCE)
-  set(NANO_SERVICE "nanocurrency-beta.service")
-  set(NANO_PREFIX "Beta")
-elseif("${ACTIVE_NETWORK}" MATCHES "kshs_test_network")
-  project("nano-node-test")
-  set(CPACK_PACKAGE_NAME
-      "nano-node-test"
-      CACHE STRING "" FORCE)
-  set(CPACK_NSIS_PACKAGE_NAME
-      "Nano-Test"
-      CACHE STRING "" FORCE)
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY
-      "nanocurrency-test"
-      CACHE STRING "" FORCE)
-  set(NANO_SERVICE "nanocurrency-test.service")
-  set(NANO_PREFIX "Test")
+  set(KAKITU_SERVICE "kakitu-test.service")
+  set(KAKITU_PREFIX "Test")
 endif()
 set(NANO_OSX_PACKAGE_NAME
     ${CPACK_NSIS_PACKAGE_NAME}
@@ -699,7 +686,7 @@ if(NANO_TEST OR RAIBLOCKS_TEST)
     build_tests
     COMMAND echo "BATCH BUILDING TESTS"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS core_test load_test rpc_test nano_node nano_rpc)
+    DEPENDS core_test load_test rpc_test kakitu_node kakitu_rpc)
   add_custom_target(
     run_tests
     COMMAND ${PROJECT_SOURCE_DIR}/ci/test.sh ${CMAKE_BINARY_DIR}
@@ -772,25 +759,25 @@ if(NANO_GUI OR RAIBLOCKS_GUI)
   qt5_add_resources(RES resources.qrc)
 
   add_executable(
-    nano_wallet ${PLATFORM_GUI_TARGET_PROPERTIES} ${PLATFORM_WALLET_SOURCE}
+    kakitu_wallet ${PLATFORM_GUI_TARGET_PROPERTIES} ${PLATFORM_WALLET_SOURCE}
                 nano/nano_wallet/entry.cpp nano/nano_wallet/icon.hpp ${RES})
 
-  target_link_libraries(nano_wallet rpc node qt)
+  target_link_libraries(kakitu_wallet rpc node qt)
 
   if(WIN32)
-    target_link_libraries(nano_wallet Qt5::WinExtras)
-    # nano_wallet.com executable for Windows console
-    add_executable(nano_wallet_com nano/nano_wallet/entry_com.cpp)
-    target_link_libraries(nano_wallet_com node)
+    target_link_libraries(kakitu_wallet Qt5::WinExtras)
+    # kakitu_wallet.com executable for Windows console
+    add_executable(kakitu_wallet_com nano/nano_wallet/entry_com.cpp)
+    target_link_libraries(kakitu_wallet_com node)
     set_target_properties(
-      nano_wallet_com
+      kakitu_wallet_com
       PROPERTIES COMPILE_FLAGS "-DBOOST_ASIO_HAS_STD_ARRAY=1"
-                 OUTPUT_NAME "nano_wallet"
+                 OUTPUT_NAME "kakitu_wallet"
                  SUFFIX ".com")
   endif()
 
   set_target_properties(
-    qt nano_wallet PROPERTIES COMPILE_FLAGS
+    qt kakitu_wallet PROPERTIES COMPILE_FLAGS
                               "-DQT_NO_KEYWORDS -DBOOST_ASIO_HAS_STD_ARRAY=1")
 
   if(NANO_TEST OR RAIBLOCKS_TEST)
@@ -816,11 +803,11 @@ if(NANO_GUI OR RAIBLOCKS_GUI)
     set(CPACK_GENERATOR "DragNDrop")
     configure_file(${CMAKE_SOURCE_DIR}/Info.plist.in
                    ${CMAKE_SOURCE_DIR}/Info.plist @ONLY)
-    install(TARGETS nano_wallet
+    install(TARGETS kakitu_wallet
             DESTINATION ${NANO_OSX_PACKAGE_NAME}.app/Contents/MacOS)
-    install(TARGETS nano_node
+    install(TARGETS kakitu_node
             DESTINATION ${NANO_OSX_PACKAGE_NAME}.app/Contents/MacOS)
-    install(TARGETS nano_rpc
+    install(TARGETS kakitu_rpc
             DESTINATION ${NANO_OSX_PACKAGE_NAME}.app/Contents/MacOS)
     install(FILES Info.plist DESTINATION ${NANO_OSX_PACKAGE_NAME}.app/Contents)
     install(FILES qt.conf
@@ -849,24 +836,24 @@ if(NANO_GUI OR RAIBLOCKS_GUI)
     endif()
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS
         "ExecWait '\\\"$INSTDIR\\\\${WIN_REDIST}\\\" /quiet /norestart'
-												WriteRegDWORD HKLM 'SYSTEM\\\\CurrentControlSet\\\\Services\\\\EventLog\\\\Nano\\\\Nano${NANO_PREFIX}' 'TypesSupported' '0x7'
-												WriteRegStr HKLM 'SYSTEM\\\\CurrentControlSet\\\\Services\\\\EventLog\\\\Nano\\\\Nano${NANO_PREFIX}' 'EventMessageFile' '$INSTDIR\\\\nano_wallet.exe'"
+												WriteRegDWORD HKLM 'SYSTEM\\\\CurrentControlSet\\\\Services\\\\EventLog\\\\Kakitu\\\\Kakitu${KAKITU_PREFIX}' 'TypesSupported' '0x7'
+												WriteRegStr HKLM 'SYSTEM\\\\CurrentControlSet\\\\Services\\\\EventLog\\\\Kakitu\\\\Kakitu${KAKITU_PREFIX}' 'EventMessageFile' '$INSTDIR\\\\kakitu_wallet.exe'"
     )
     set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
-        "DeleteRegKey HKLM 'SYSTEM\\\\CurrentControlSet\\\\Services\\\\EventLog\\\\Nano${NANO_PREFIX}'"
+        "DeleteRegKey HKLM 'SYSTEM\\\\CurrentControlSet\\\\Services\\\\EventLog\\\\Kakitu${KAKITU_PREFIX}'"
     )
     set(CPACK_NSIS_MUI_ICON ${CMAKE_SOURCE_DIR}/Nano.ico)
-    set(CPACK_NSIS_DISPLAY_NAME "Nano${NANO_PREFIX}")
-    set(CPACK_NSIS_URL_INFO_ABOUT "https://nano.org")
-    set(CPACK_NSIS_CONTACT "info@nano.org")
-    set(CPACK_NSIS_MENU_LINKS "nano_wallet.exe" "Nano Wallet"
-                              "https://nano.org" "Nano website")
+    set(CPACK_NSIS_DISPLAY_NAME "Kakitu${KAKITU_PREFIX}")
+    set(CPACK_NSIS_URL_INFO_ABOUT "https://kakitu.org")
+    set(CPACK_NSIS_CONTACT "info@kakitu.org")
+    set(CPACK_NSIS_MENU_LINKS "kakitu_wallet.exe" "Kakitu Wallet"
+                              "https://kakitu.org" "Kakitu website")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     get_target_property(Qt5WindowsPlugin Qt5::QWindowsIntegrationPlugin
                         LOCATION)
     get_filename_component(Qt5_bin_DIR ${Qt5_DIR}/../../../bin ABSOLUTE)
-    install(TARGETS nano_wallet DESTINATION .)
-    install(TARGETS nano_wallet_com DESTINATION .)
+    install(TARGETS kakitu_wallet DESTINATION .)
+    install(TARGETS kakitu_wallet_com DESTINATION .)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${WIN_REDIST} DESTINATION .)
     install(FILES ${Qt5_bin_DIR}/libGLESv2.dll DESTINATION .)
     install(FILES ${Qt5_bin_DIR}/Qt5Core.dll DESTINATION .)
@@ -878,8 +865,8 @@ if(NANO_GUI OR RAIBLOCKS_GUI)
     set(CPACK_GENERATOR "TBZ2;DEB")
     set(CPACK_DEBIAN_PACKAGE_DEPENDS
         "qt5-default | qtbase5-dev, qtchooser, qt5-qmake, qtbase5-dev-tools")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "russel@nano.org")
-    install(TARGETS nano_wallet RUNTIME DESTINATION ./bin)
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "info@kakitu.org")
+    install(TARGETS kakitu_wallet RUNTIME DESTINATION ./bin)
     set(DEBIAN_POSTINST postinst.in)
     set(DEBIAN_POSTRM postrm.in)
 
@@ -899,7 +886,7 @@ if(NANO_GUI OR RAIBLOCKS_GUI)
         GROUP_EXECUTE
         WORLD_READ
         WORLD_EXECUTE)
-    install(FILES etc/systemd/${NANO_SERVICE} DESTINATION ./extras/systemd/.)
+    install(FILES etc/systemd/${KAKITU_SERVICE} DESTINATION ./extras/systemd/.)
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
         "${CMAKE_CURRENT_BINARY_DIR}/debian-control/postinst;${CMAKE_CURRENT_BINARY_DIR}/debian-control/postrm"
     )
