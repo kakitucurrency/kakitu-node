@@ -60,7 +60,7 @@ representative at an online or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at
-moderation@nano.org.
+info@kakitu.org.
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the
@@ -127,5 +127,5 @@ For answers to common questions about this code of conduct, see the FAQ at
 https://www.contributor-covenant.org/faq. Translations are available at
 https://www.contributor-covenant.org/translations.
 
-Community Leaders are Nano Foundation members, Nano core dev team members
-and Nano Discord moderators, as and where applicable.
+Community Leaders are Kakitu Foundation members, Kakitu core dev team members
+and Kakitu Discord moderators, as and where applicable.

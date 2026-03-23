@@ -98,7 +98,7 @@ jobs:
         run: ci/actions/linux/install_deps.sh
 
       - name: Build Tests
-        run: docker run -e TEST_USE_ROCKSDB  -e RELEASE -v ${PWD}:/workspace nanocurrency/nano-env:${{ matrix.COMPILER }} /bin/bash -c "cd /workspace && ./ci/build-ci.sh /usr/lib/x86_64-linux-gnu/cmake/Qt5"
+        run: docker run -e TEST_USE_ROCKSDB  -e RELEASE -v ${PWD}:/workspace kakitucurrency/kakitu-env:${{ matrix.COMPILER }} /bin/bash -c "cd /workspace && ./ci/build-ci.sh /usr/lib/x86_64-linux-gnu/cmake/Qt5"
 
       - name: Save Build Cache
         # only save build cache from develop to avoid polluting it by other branches / PRs
@@ -110,7 +110,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.COMPILER }}-build-cache
 
       - name: Run Tests
-        run: docker run -e RELEASE -e TEST_USE_ROCKSDB -e DEADLINE_SCALE_FACTOR -v ${PWD}:/workspace nanocurrency/nano-env:${{ matrix.COMPILER }} /bin/bash -c "cd /workspace/build && ../ci/test.sh ."
+        run: docker run -e RELEASE -e TEST_USE_ROCKSDB -e DEADLINE_SCALE_FACTOR -v ${PWD}:/workspace kakitucurrency/kakitu-env:${{ matrix.COMPILER }} /bin/bash -c "cd /workspace/build && ../ci/test.sh ."
         env:
           DEADLINE_SCALE_FACTOR: ${{ env.TEST_USE_ROCKSDB == 1 && '2' || '1' }}
 

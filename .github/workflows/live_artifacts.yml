@@ -4,7 +4,7 @@ on:
     inputs:
       repo:
         description: "repo"
-        default: "nanocurrency/nano-node"
+        default: "kakitucurrency/kakitu-node"
         required: true
       ref:
         description: "tag to build"
@@ -55,7 +55,7 @@ jobs:
           COMPILER: gcc
         run: ci/actions/linux/install_deps.sh
       - name: Build Artifact
-        run: docker run -v ${GITHUB_WORKSPACE}:/workspace nanocurrency/nano-env:gcc /bin/bash -c "cd /workspace && CI_TAG=${TAG} ci/build-deploy.sh /usr/lib/x86_64-linux-gnu/cmake/Qt5"
+        run: docker run -v ${GITHUB_WORKSPACE}:/workspace kakitucurrency/kakitu-env:gcc /bin/bash -c "cd /workspace && CI_TAG=${TAG} ci/build-deploy.sh /usr/lib/x86_64-linux-gnu/cmake/Qt5"
       - name: Deploy Artifact
         run: ci/actions/deploy.sh
         env:
@@ -78,14 +78,14 @@ jobs:
           ref: ${{ github.ref }}
           repository: ${{ github.repository }}
       - name: CentOS Base
-        run: ci/build-docker-image.sh docker/ci/Dockerfile-centos nanocurrency/nano-env:centos
+        run: ci/build-docker-image.sh docker/ci/Dockerfile-centos kakitucurrency/kakitu-env:centos
       - name: Build Artifact
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/artifacts
           docker run -e LIVE=1 -e TAG=$TAG -e REPO_TO_BUILD=$REPO_TO_BUILD -e RPM_RELEASE=1 \
           -v ${GITHUB_WORKSPACE}:/workspace \
           -v ${GITHUB_WORKSPACE}/artifacts:/root/rpmbuild \
-          nanocurrency/nano-env:centos /bin/bash -c "ci/build-centos.sh"
+          kakitucurrency/kakitu-env:centos /bin/bash -c "ci/build-centos.sh"
       - name: Deploy Artifacts
         run: ci/actions/deploy.sh
         env:
@@ -111,10 +111,10 @@ jobs:
         env:
           COMPILER: gcc
         run: ci/actions/linux/install_deps.sh
-      - name: Build Docker (nanocurrency/nano)
+      - name: Build Docker (kakitucurrency/kakitu)
         run: CI_TAG=${TAG} ci/actions/linux/docker-build.sh
-      - name: Deploy Docker Hub (nanocurrency/nano)
-        if: ${{ github.repository == 'nanocurrency/nano-node' }}
+      - name: Deploy Docker Hub (kakitucurrency/kakitu)
+        if: ${{ github.repository == 'kakitucurrency/kakitu-node' }}
         run: CI_TAG=${TAG} ci/actions/linux/docker-deploy.sh
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
