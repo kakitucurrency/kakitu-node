@@ -71,10 +71,10 @@ Replace/update entries:
 |-------|--------|
 | `live_public_key_data` | Replace with new genesis public key |
 | `live_genesis_data` | Replace entirely — new block JSON, all `kshs_` addresses, new work + signature |
-| `dev_public_key_data` / `dev_private_key_data` | Keep Nano dev key (publicly known, fine for local dev) |
-| `dev_genesis_data` | Update `xrb_` address prefix to `kshs_` only (key/work/signature unchanged) |
+| `dev_public_key_data` / `dev_private_key_data` | Keep Nano dev key values (publicly known, fine for local dev); update the inline comment from `xrb_` to the equivalent `kshs_` address |
+| `dev_genesis_data` | Update `xrb_` address strings to `kshs_` prefix only (key/work/signature unchanged) |
 | `beta_public_key_data` / `beta_genesis_data` | Remove (no beta network) |
-| `test_public_key_data` / `test_genesis_data` | Keep env-var driven (unchanged) |
+| `test_public_key_data` / `test_genesis_data` | Keep env-var driven — block content unchanged, but env var name changes per Section 5 (`NANO_TEST_GENESIS_PUB` → `KAKITU_TEST_GENESIS_PUB`, `NANO_TEST_GENESIS_BLOCK` → `KAKITU_TEST_GENESIS_BLOCK`) |
 
 ### 1.4 Generate fresh canary keypairs
 
@@ -135,7 +135,9 @@ Test network ports are env-var driven (`KAKITU_TEST_NODE_PORT` etc., renamed in 
 
 The `is_beta_network()` branch inside the `network_constants` constructor (`nano/lib/config.hpp`) that assigns beta ports `54000/55000/56000/57000` is **removed**. With no beta network this is dead code and a risk if accidentally triggered.
 
-The `set_active_network(std::string)` function in `nano/lib/config.hpp` currently accepts `"beta"` as a valid string (sets `kshs_beta_network`). The `"beta"` branch is **removed** — passing `--network=beta` at the CLI will now return an error, which is the correct behaviour. The doc comment on that function is also updated to remove `"beta"` from the list of valid values.
+The `set_active_network(std::string)` function in `nano/lib/config.hpp` currently accepts `"beta"` as a valid string (sets `kshs_beta_network`). The `"beta"` branch is **removed** — passing `--network=beta` at the CLI will now return an error, which is the correct behaviour. The doc comment on that function is updated to remove `"beta"` from the list of valid values.
+
+The `get_current_network_as_string()` inline in `config.hpp` also has an `is_beta_network() ? "beta"` branch — this is updated to remove the beta case (it will fall through to the `else` / unknown path, which is acceptable since beta is no longer a valid active network).
 
 ### 2.3 Data directory paths (`nano/secure/utility.cpp`)
 
@@ -245,13 +247,13 @@ set(KAKITU_SERVICE                  "kakitu.service")
 
 The beta-network conditional blocks inside `CMakeLists.txt` that set `nano-node-beta` / `nanocurrency-beta` package names are removed.
 
-### 4.3 Systemd service file
+### 4.3 Systemd service files
 
-`etc/systemd/nanocurrency.service` → `etc/systemd/kakitu.service`
-- Binary: `kakitu_node`
-- Description: `Kakitu Currency Daemon`
-- User/group: `kakitu`
-- Home: `/var/kakitu/`
+Three files exist in `etc/systemd/`:
+
+- `nanocurrency.service` → **rename** to `kakitu.service`: update binary (`kakitu_node`), description (`Kakitu Currency Daemon`), user/group (`kakitu`), home (`/var/kakitu/`)
+- `nanocurrency-test.service` → **rename** to `kakitu-test.service`: update binary and paths equivalently
+- `nanocurrency-beta.service` → **delete** (no beta network)
 
 ### 4.4 RPM spec (`nanocurrency.spec.in` → `kakitu.spec.in`)
 
