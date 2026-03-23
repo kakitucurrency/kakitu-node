@@ -163,8 +163,8 @@ set(ACTIVE_NETWORK
     kshs_live_network
     CACHE STRING "Selects which network parameters are used")
 set_property(
-  CACHE ACTIVE_NETWORK PROPERTY STRINGS kshs_dev_network kshs_beta_network
-                                kshs_live_network kshs_test_network)
+  CACHE ACTIVE_NETWORK PROPERTY STRINGS kshs_dev_network kshs_live_network
+                                kshs_test_network)
 set(CPACK_PACKAGE_NAME
     "kakitu-node"
     CACHE STRING "" FORCE)
