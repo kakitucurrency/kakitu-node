@@ -124,14 +124,10 @@ uint32_t test_scan_wallet_reps_delay ();
 enum class networks : uint16_t
 {
 	invalid = 0x0,
-	// Low work parameters, publicly known genesis key, dev IP ports
-	kshs_dev_network = 0x5241, // 'R', 'A'
-	// Normal work parameters, secret beta genesis key, beta IP ports
-	kshs_beta_network = 0x5242, // 'R', 'B'
-	// Normal work parameters, secret live key, live IP ports
-	kshs_live_network = 0x5243, // 'R', 'C'
-	// Normal work parameters, secret test genesis key, test IP ports
-	kshs_test_network = 0x5258, // 'R', 'X'
+	kshs_dev_network  = 0x4B44, // 'K', 'D'
+	kshs_beta_network = 0x4B42, // 'K', 'B'  (enum retained, no beta network runs)
+	kshs_live_network = 0x4B4C, // 'K', 'L'
+	kshs_test_network = 0x4B58, // 'K', 'X'
 };
 
 enum class work_version
@@ -218,17 +214,10 @@ public:
 	{
 		if (is_live_network ())
 		{
-			default_node_port = 7075;
-			default_rpc_port = 7076;
-			default_ipc_port = 7077;
-			default_websocket_port = 7078;
-		}
-		else if (is_beta_network ())
-		{
-			default_node_port = 54000;
-			default_rpc_port = 55000;
-			default_ipc_port = 56000;
-			default_websocket_port = 57000;
+			default_node_port = 44075;
+			default_rpc_port = 44076;
+			default_ipc_port = 44077;
+			default_websocket_port = 44078;
 		}
 		else if (is_test_network ())
 		{
@@ -325,7 +314,7 @@ public:
 	/**
 	 * Optionally called on startup to override the global active network.
 	 * If not called, the compile-time option will be used.
-	 * @param network_a The new active network. Valid values are "live", "beta" and "dev"
+	 * @param network_a The new active network. Valid values are "live", "test" and "dev"
 	 */
 	static bool set_active_network (std::string network_a)
 	{
@@ -333,10 +322,6 @@ public:
 		if (network_a == "live")
 		{
 			active_network = nano::networks::kshs_live_network;
-		}
-		else if (network_a == "beta")
-		{
-			active_network = nano::networks::kshs_beta_network;
 		}
 		else if (network_a == "dev")
 		{
@@ -355,9 +340,7 @@ public:
 
 	char const * get_current_network_as_string ()
 	{
-		return is_live_network () ? "live" : is_beta_network () ? "beta"
-		: is_test_network ()                                    ? "test"
-																: "dev";
+		return is_live_network () ? "live" : is_test_network () ? "test" : "dev";
 	}
 
 	bool is_live_network () const
