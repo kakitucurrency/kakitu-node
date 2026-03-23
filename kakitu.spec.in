@@ -1,18 +1,18 @@
-Name:                   nanocurrency
-Version:                @VERSION@ 
+Name:                   kakitu
+Version:                @VERSION@
 Release:                @RELEASE@%{?dist}
-Summary:                Nanocurrency Daemon
+Summary:                Kakitu Currency Daemon
 License:                BSD-2-Clause
-URL:                    https://nano.org/
+URL:                    https://kakitu.org
 Requires(pre):          /usr/sbin/useradd, /usr/bin/getent
 Requires(postun):       /usr/sbin/userdel
 BuildRequires:          make, libstdc++-static, glibc-devel, glibc-headers
 Source:                 nano-%{version}.tar.gz
 
 %description
-This is nanocurrency daemon.  Nano is a digital currency that is
+This is Kakitu Currency daemon.  Kakitu is a digital currency that is
 peer-to-peer, decentralized, and trustless. This package includes
-the nano daemon, and a service.
+the kakitu daemon, and a service.
 
 %prep
 if [ ! -x "$(which cmake)" ]; then
@@ -33,34 +33,38 @@ fi
 
 %build
 cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DBOOST_ROOT=/usr/local/boost .
-make nano_node %{?_smp_mflags}
-make nano_rpc %{?_smp_mflags}
+make kakitu_node %{?_smp_mflags}
+make kakitu_rpc %{?_smp_mflags}
 
 %install
 if [ ! %{buildroot} = "/" ]; then %{__rm} -rf %{buildroot}; fi
 mkdir -p %{buildroot}/usr/bin
 mkdir -p %{buildroot}/etc/systemd/system/
-cp nano_node %{buildroot}/usr/bin/nano_node
-cp nano_rpc %{buildroot}/usr/bin/nano_rpc
-cp etc/systemd/nanocurrency.service %{buildroot}/etc/systemd/system/nanocurrency.service
+cp kakitu_node %{buildroot}/usr/bin/kakitu_node
+cp kakitu_rpc %{buildroot}/usr/bin/kakitu_rpc
+cp etc/systemd/kakitu.service %{buildroot}/etc/systemd/system/kakitu.service
 
 %clean
 if [ ! %{buildroot} = "/" ]; then %{__rm} -rf %{buildroot}; fi
 
 %files
 %defattr(755,root,root)
-%{_bindir}/nano_node
-%{_bindir}/nano_rpc
-%attr(644,root,root) /etc/systemd/system/nanocurrency.service
+%{_bindir}/kakitu_node
+%{_bindir}/kakitu_rpc
+%attr(644,root,root) /etc/systemd/system/kakitu.service
 
 %pre
 PATH="/usr/bin:/usr/sbin:/bin:/sbin:${PATH}"; export PATH
-mkdir -p /var/nanocurrency/Nano
-getent group nanocurrency >/dev/null || groupadd --system nanocurrency || exit 1
-getent passwd nanocurrency >/dev/null || useradd --system --create-home --home-dir /var/nanocurrency --shell /bin/bash --comment "Nanocurrency Daemon user" --gid nanocurrency nanocurrency || exit 1
-chown -R nanocurrency:nanocurrency /var/nanocurrency
-chmod 700 /var/nanocurrency
+mkdir -p /var/kakitu/Kakitu
+getent group kakitu >/dev/null || groupadd --system kakitu || exit 1
+getent passwd kakitu >/dev/null || useradd --system --create-home --home-dir /var/kakitu --shell /bin/bash --comment "Kakitu Currency Daemon user" --gid kakitu kakitu || exit 1
+chown -R kakitu:kakitu /var/kakitu
+chmod 700 /var/kakitu
+
+%post
+systemctl daemon-reload >/dev/null 2>&1 || :
+systemctl enable kakitu.service >/dev/null 2>&1 || :
 
 %postun
 PATH="/usr/bin:/usr/sbin:/bin:/sbin:${PATH}"; export PATH
-userdel nanocurrency >/dev/null 2>/dev/null || :
+userdel kakitu >/dev/null 2>/dev/null || :

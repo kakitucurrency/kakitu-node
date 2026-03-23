@@ -1,0 +1,13 @@
+[Unit]
+Description=Kakitu Live Network Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=kakitu
+WorkingDirectory=/var/kakitu/Kakitu
+ExecStart=/usr/bin/kakitu_node --daemon --data_path=/var/kakitu/Kakitu
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

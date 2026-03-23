@@ -1,0 +1,13 @@
+[Unit]
+Description=Kakitu Test Network Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=kakitu
+WorkingDirectory=/var/kakitu/KakituTest
+ExecStart=/usr/bin/kakitu_node --daemon --network=test --data_path=/var/kakitu/KakituTest
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
