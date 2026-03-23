@@ -15,14 +15,17 @@ jobs:
       - name: Fetch Deps
         run: ci/actions/linux/install_deps.sh
       - name: Login to ghcr.io
+        if: ${{ github.repository == 'kakitucurrency/kakitu-node' }}
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a #v2.1.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy Docker (ghcr.io)
+        if: ${{ github.repository == 'kakitucurrency/kakitu-node' }}
         run: ci/actions/linux/ghcr_push.sh
       - name: Deploy Docker (kakitucurrency/kakitu-env)
+        if: ${{ github.repository == 'kakitucurrency/kakitu-node' }}
         run: ci/actions/linux/docker-deploy.sh
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

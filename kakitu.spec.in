@@ -7,7 +7,7 @@ URL:                    https://kakitu.org
 Requires(pre):          /usr/sbin/useradd, /usr/bin/getent
 Requires(postun):       /usr/sbin/userdel
 BuildRequires:          make, libstdc++-static, glibc-devel, glibc-headers
-Source:                 nano-%{version}.tar.gz
+Source:                 kakitu-node-%{version}.tar.gz
 
 %description
 This is Kakitu Currency daemon.  Kakitu is a digital currency that is
@@ -29,7 +29,7 @@ if test ! -d /usr/local/boost; then
 	echo "Boost should be in /usr/local/boost" >&2
 	exit 1
 fi
-%autosetup -n nano-%{version}
+%autosetup -n kakitu-node-%{version}
 
 %build
 cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DBOOST_ROOT=/usr/local/boost .
