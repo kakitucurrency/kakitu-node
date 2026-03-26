@@ -1,4 +1,9 @@
 
+[node]
+# Bind address for the node
+# type:string,ip
+peering_port = 44075
+
 [node.websocket]
 
 # WebSocket server bind address.

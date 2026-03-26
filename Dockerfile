@@ -1,3 +1,6 @@
+# Railway deployment — builds and runs the Kakitu live network node
+# See docker/node/ for detailed configuration
+
 ARG ENV_REPOSITORY=nanocurrency/nano-env
 ARG COMPILER=gcc
 FROM ${ENV_REPOSITORY}:${COMPILER} AS builder
@@ -20,6 +23,10 @@ RUN cmake /tmp/src \
     echo ${NETWORK} > /etc/kakitu-network
 
 FROM ubuntu:22.04
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --gid 1000 kakitu && \
     useradd --uid 1000 --gid kakitu --shell /bin/bash --create-home kakitu
