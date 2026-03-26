@@ -116,12 +116,13 @@ fi
 
 case $command in
 *"--daemon"*)
+	command="${command} --data_path ${kakitudir}"
 	if [ $db_size -ne 0 ]; then
 		if [ -f "${dbFile}" ]; then
 			dbFileSize="$(stat -c %s "${dbFile}" 2>/dev/null)"
 			if [ "${dbFileSize}" -gt $((1024 * 1024 * 1024 * db_size)) ]; then
 				echo "ERROR: Database size grew above ${db_size}GB (size = ${dbFileSize})" >&2
-				kakitu_node --vacuum
+				kakitu_node --vacuum --data_path "${kakitudir}"
 			fi
 		fi
 	fi
