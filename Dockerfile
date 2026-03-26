@@ -7,6 +7,8 @@ ARG NETWORK=live
 ARG CI_TAG=DEV_BUILD
 ARG CI_BUILD=OFF
 ARG GIT_BRANCH=main
+# Pass a new CACHE_BUST value to force a fresh git clone (e.g. the commit hash)
+ARG CACHE_BUST=1
 
 # Clone with all submodules (Boost, RocksDB, cryptopp, etc. are git submodules)
 RUN git clone --recursive --depth=1 --branch=${GIT_BRANCH} \
