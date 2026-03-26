@@ -13,7 +13,9 @@ endif()
 # Embed bootstrap representative weights in executable. Both live and beta
 # weights are added to accommodate switching networks from the command line.
 file(READ ${CMAKE_SOURCE_DIR}/rep_weights_live.bin liveweights HEX)
-string(REGEX REPLACE "(..)" "0x\\1," liveweights ${liveweights})
+if(liveweights)
+  string(REGEX REPLACE "(..)" "0x\\1," liveweights ${liveweights})
+endif()
 file(
   WRITE ${CMAKE_BINARY_DIR}/bootstrap_weights_live.cpp
   "#include <cstddef>\n"
@@ -24,7 +26,9 @@ file(
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/rep_weights_beta.bin)
   file(READ ${CMAKE_SOURCE_DIR}/rep_weights_beta.bin betaweights HEX)
-  string(REGEX REPLACE "(..)" "0x\\1," betaweights ${betaweights})
+  if(betaweights)
+    string(REGEX REPLACE "(..)" "0x\\1," betaweights ${betaweights})
+  endif()
 endif()
 file(
   WRITE ${CMAKE_BINARY_DIR}/bootstrap_weights_beta.cpp
