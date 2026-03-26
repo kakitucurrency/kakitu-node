@@ -130,4 +130,12 @@ case $command in
 esac
 
 printf "EXECUTING: ${command}\n"
+
+# Start kakitu_rpc alongside the node (it connects over IPC to serve HTTP on the RPC port)
+case $command in
+*"--daemon"*)
+	kakitu_rpc --daemon --data_path "${kakitudir}" &
+	;;
+esac
+
 exec $command
