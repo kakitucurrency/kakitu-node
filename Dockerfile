@@ -1,14 +1,16 @@
-# Railway deployment — builds and runs the Kakitu live network node
-# See docker/node/ for detailed configuration
+# Kakitu Node — Railway deployment Dockerfile
+# Clones from GitHub with submodules so Boost/RocksDB etc. are available at build time
 
-ARG ENV_REPOSITORY=nanocurrency/nano-env
-ARG COMPILER=gcc
-FROM ${ENV_REPOSITORY}:${COMPILER} AS builder
+FROM nanocurrency/nano-env:gcc AS builder
 
 ARG NETWORK=live
 ARG CI_TAG=DEV_BUILD
 ARG CI_BUILD=OFF
-ADD ./ /tmp/src
+ARG GIT_BRANCH=main
+
+# Clone with all submodules (Boost, RocksDB, cryptopp, etc. are git submodules)
+RUN git clone --recursive --depth=1 --branch=${GIT_BRANCH} \
+    https://github.com/kakitucurrency/kakitu-node.git /tmp/src
 
 WORKDIR /tmp/build
 
@@ -34,8 +36,8 @@ RUN groupadd --gid 1000 kakitu && \
 COPY --from=builder /tmp/build/kakitu_node /usr/bin/kakitu_node
 COPY --from=builder /tmp/build/kakitu_rpc /usr/bin/kakitu_rpc
 COPY --from=builder /etc/kakitu-network /etc/kakitu-network
-COPY docker/node/entry.sh /usr/bin/entry.sh
-COPY docker/node/config /usr/share/kakitu/config
+COPY --from=builder /tmp/src/docker/node/entry.sh /usr/bin/entry.sh
+COPY --from=builder /tmp/src/docker/node/config /usr/share/kakitu/config
 RUN chmod +x /usr/bin/entry.sh && ldconfig
 
 WORKDIR /home/kakitu
@@ -43,7 +45,7 @@ USER kakitu
 
 ENV PATH="${PATH}:/usr/bin"
 
-# Node P2P port | RPC port | IPC port | WebSocket port
+# Node P2P | RPC | IPC | WebSocket
 EXPOSE 44075 44076 44077 44078
 
 ENTRYPOINT ["/usr/bin/entry.sh"]
