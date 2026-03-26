@@ -40,10 +40,11 @@ COPY --from=builder /tmp/src/docker/node/entry.sh /usr/bin/entry.sh
 COPY --from=builder /tmp/src/docker/node/config /usr/share/kakitu/config
 RUN chmod +x /usr/bin/entry.sh && ldconfig
 
-WORKDIR /home/kakitu
-USER kakitu
+WORKDIR /root
 
 ENV PATH="${PATH}:/usr/bin"
+# Data directory — mount a Railway Volume at this path for ledger persistence
+ENV KAKITU_DATA=/home/kakitu
 
 # Node P2P | RPC | IPC | WebSocket
 EXPOSE 44075 44076 44077 44078

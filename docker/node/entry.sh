@@ -101,7 +101,9 @@ test)
 	;;
 esac
 
-kakitudir="${HOME}/Kakitu${dirSuffix}"
+# Use KAKITU_DATA env var if set, otherwise default to /home/kakitu (Railway volume mount point)
+KAKITU_DATA="${KAKITU_DATA:-/home/kakitu}"
+kakitudir="${KAKITU_DATA}/Kakitu${dirSuffix}"
 dbFile="${kakitudir}/data.ldb"
 
 mkdir -p "${kakitudir}"
