@@ -14,7 +14,7 @@ class rocksdb_config final
 {
 public:
 	rocksdb_config () :
-		enable{ using_rocksdb_in_tests () }
+		enable{ true } // RocksDB is the default backend; set to false to use LMDB
 	{
 	}
 	nano::error serialize_toml (nano::tomlconfig & toml_a) const;

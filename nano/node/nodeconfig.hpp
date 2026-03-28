@@ -108,7 +108,7 @@ public:
 	double bootstrap_bandwidth_burst_ratio{ 1. };
 	nano::bootstrap_ascending_config bootstrap_ascending;
 	std::chrono::milliseconds conf_height_processor_batch_min_time{ 50 };
-	bool backup_before_upgrade{ false };
+	bool backup_before_upgrade{ true };
 	double max_work_generate_multiplier{ 64. };
 	uint32_t max_queued_requests{ 512 };
 	std::chrono::seconds max_pruning_age{ !network_params.network.is_beta_network () ? std::chrono::seconds (24 * 60 * 60) : std::chrono::seconds (5 * 60) }; // 1 day; 5 minutes for beta network
@@ -136,13 +136,13 @@ public:
 	bool disable_add_initial_peers{ false }; // For testing only
 	bool disable_backup{ false };
 	bool disable_lazy_bootstrap{ false };
-	bool disable_legacy_bootstrap{ false };
+	bool disable_legacy_bootstrap{ true }; // Legacy bootstrap disabled by default; use ascending bootstrap
 	bool disable_wallet_bootstrap{ false };
 	bool disable_bootstrap_listener{ false };
 	bool disable_bootstrap_bulk_pull_server{ false };
 	bool disable_bootstrap_bulk_push_client{ false };
 	bool disable_ongoing_bootstrap{ false }; // For testing only
-	bool disable_ascending_bootstrap{ false };
+	bool disable_ascending_bootstrap{ false }; // Ascending bootstrap enabled by default
 	bool disable_rep_crawler{ false };
 	bool disable_request_loop{ false }; // For testing only
 	bool disable_tcp_realtime{ false };
