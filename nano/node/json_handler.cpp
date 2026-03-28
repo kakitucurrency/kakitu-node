@@ -167,12 +167,14 @@ void nano::json_handler::response_errors ()
 	{
 		boost::property_tree::ptree response_error;
 		response_error.put ("error", ec.message ());
+		response_error.put ("api_version", 1);
 		std::stringstream ostream;
 		boost::property_tree::write_json (ostream, response_error);
 		response (ostream.str ());
 	}
 	else
 	{
+		response_l.put ("api_version", 1);
 		std::stringstream ostream;
 		boost::property_tree::write_json (ostream, response_l);
 		response (ostream.str ());
@@ -2923,7 +2925,7 @@ void nano::json_handler::node_id ()
 {
 	if (!ec)
 	{
-		response_l.put ("private", node.node_id.prv.to_string ());
+		// NOTE: private key intentionally not returned for security
 		response_l.put ("public", node.node_id.pub.to_string ());
 		response_l.put ("as_account", node.node_id.pub.to_account ());
 		response_l.put ("node_id", node.node_id.pub.to_node_id ());

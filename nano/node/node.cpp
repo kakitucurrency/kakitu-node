@@ -135,6 +135,9 @@ nano::keypair nano::load_or_create_node_id (boost::filesystem::path const & appl
 			<< std::flush;
 		ofs.close ();
 		release_assert (!ofs.fail ());
+		// Restrict file to owner read/write only so private key is not world-readable
+		boost::filesystem::permissions (node_private_key_path,
+			boost::filesystem::owner_read | boost::filesystem::owner_write);
 		return kp;
 	}
 }
@@ -422,6 +425,15 @@ nano::node::node (boost::asio::io_context & io_ctx_a, boost::filesystem::path co
 
 		node_id = nano::load_or_create_node_id (application_path, logger);
 		logger.always_log ("Node ID: ", node_id.pub.to_node_id ());
+
+		// Warn if online_weight_minimum exceeds 50% of genesis supply, which would prevent quorum
+		{
+			auto genesis_supply = ledger.constants.genesis_amount;
+			if (config.online_weight_minimum.number () > genesis_supply / 2)
+			{
+				logger.always_log ("WARNING: online_weight_minimum exceeds 50% of genesis supply - network may never reach quorum");
+			}
+		}
 
 		if ((network_params.network.is_live_network () || network_params.network.is_beta_network ()) && !flags.inactive_node)
 		{
