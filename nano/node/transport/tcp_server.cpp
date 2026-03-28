@@ -378,6 +378,11 @@ void nano::transport::tcp_server::handshake_message_visitor::node_id_handshake (
 
 	if (message.query)
 	{
+		// TODO: Remove legacy V1 handshake after protocol version bump to 0x14
+		if (!message.is_v2 ())
+		{
+			node->logger.try_log (boost::str (boost::format ("V1 handshake query from peer %1% - consider upgrading protocol_version_min") % server->remote_endpoint));
+		}
 		server->send_handshake_response (*message.query, message.is_v2 ());
 	}
 	if (message.response)
