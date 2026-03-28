@@ -193,6 +193,13 @@ protected:
 	/** Updated only from strand, but stored as atomic so it can be read from outside */
 	std::atomic<bool> write_in_progress{ false };
 
+	/** Inbound rate limiting: bytes received in the current second window */
+	std::atomic<std::size_t> bytes_received_this_second{ 0 };
+	/** Timestamp (seconds since epoch) for the start of the current inbound rate window */
+	std::atomic<uint64_t> rate_window_start{ 0 };
+	/** Maximum inbound bytes per second (50 MB/s default) */
+	static constexpr std::size_t max_inbound_bytes_per_second = 50 * 1024 * 1024;
+
 	void close_internal ();
 	void write_queued_messages ();
 	void set_default_timeout ();
@@ -200,6 +207,7 @@ protected:
 	void set_last_receive_time ();
 	void ongoing_checkup ();
 	void read_impl (std::shared_ptr<std::vector<uint8_t>> const & data_a, std::size_t size_a, std::function<void (boost::system::error_code const &, std::size_t)> callback_a);
+	bool check_inbound_rate_limit (std::size_t bytes_received);
 
 private:
 	type_t type_m{ type_t::undefined };

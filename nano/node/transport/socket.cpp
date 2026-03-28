@@ -48,7 +48,8 @@ nano::transport::socket::socket (nano::node & node_a, endpoint_type_t endpoint_t
 	last_receive_time_or_init{ nano::seconds_since_epoch () },
 	default_timeout{ node_a.config.tcp_io_timeout },
 	silent_connection_tolerance_time{ node_a.network_params.network.silent_connection_tolerance_time },
-	max_queue_size{ max_queue_size_a }
+	max_queue_size{ max_queue_size_a },
+	rate_window_start{ nano::seconds_since_epoch () }
 {
 }
 
@@ -113,6 +114,13 @@ void nano::transport::socket::async_read (std::shared_ptr<std::vector<uint8_t>> 
 						this_l->node.stats.add (nano::stat::type::traffic_tcp, nano::stat::dir::in, size_a);
 						this_l->set_last_completion ();
 						this_l->set_last_receive_time ();
+						// Inbound rate limiting: close connection if bytes/second exceeds threshold
+						if (this_l->check_inbound_rate_limit (size_a))
+						{
+							this_l->node.stats.inc (nano::stat::type::tcp, nano::stat::detail::throttled, nano::stat::dir::in);
+							this_l->close ();
+							return;
+						}
 					}
 					cbk (ec, size_a);
 				}));
@@ -239,6 +247,20 @@ void nano::transport::socket::set_last_completion ()
 void nano::transport::socket::set_last_receive_time ()
 {
 	last_receive_time_or_init = nano::seconds_since_epoch ();
+}
+
+bool nano::transport::socket::check_inbound_rate_limit (std::size_t bytes_received)
+{
+	auto now = nano::seconds_since_epoch ();
+	auto window_start = rate_window_start.load ();
+	if (now > window_start)
+	{
+		// New second window: reset counter
+		bytes_received_this_second = 0;
+		rate_window_start = now;
+	}
+	bytes_received_this_second += bytes_received;
+	return bytes_received_this_second.load () > max_inbound_bytes_per_second;
 }
 
 void nano::transport::socket::ongoing_checkup ()

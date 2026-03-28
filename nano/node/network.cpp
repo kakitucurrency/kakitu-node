@@ -182,6 +182,12 @@ void nano::network::flood_block_initial (std::shared_ptr<nano::block> const & bl
 
 void nano::network::flood_vote (std::shared_ptr<nano::vote> const & vote_a, float scale)
 {
+	// Vote deduplication: skip if this vote was already propagated recently
+	auto const vote_hash = vote_a->full_hash ();
+	if (publish_filter.apply (vote_hash.bytes.data (), vote_hash.bytes.size ()))
+	{
+		return; // Already propagated recently
+	}
 	nano::confirm_ack message{ node.network_params.network, vote_a };
 	for (auto & i : list (fanout (scale)))
 	{
