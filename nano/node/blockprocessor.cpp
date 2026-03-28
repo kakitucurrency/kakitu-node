@@ -89,6 +89,12 @@ void nano::block_processor::add (std::shared_ptr<nano::block> const & block)
 		node.stats.inc (nano::stat::type::blockprocessor, nano::stat::detail::overfill);
 		return;
 	}
+	// Bounded Block Backlog: reject new blocks when active election count exceeds limit
+	if (node.active.size () >= nano::active_transactions::max_uncemented_backlog)
+	{
+		node.stats.inc (nano::stat::type::blockprocessor, nano::stat::detail::backlog_full);
+		return;
+	}
 	if (node.network_params.work.validate_entry (*block)) // true => error
 	{
 		node.stats.inc (nano::stat::type::blockprocessor, nano::stat::detail::insufficient_work);
