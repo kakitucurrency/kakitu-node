@@ -181,6 +181,12 @@ public:
 	void add_election_winner_details (nano::block_hash const &, std::shared_ptr<nano::election> const &);
 	void remove_election_winner_details (nano::block_hash const &);
 
+	/** Maximum number of entries in election_winner_details to prevent unbounded memory growth */
+	static constexpr size_t election_winner_details_max = 65536;
+
+	/** Maximum number of active (uncemented) elections before rejecting new blocks (Bounded Block Backlog) */
+	static constexpr size_t max_uncemented_backlog = 100000;
+
 private:
 	// Call action with confirmed block, may be different than what we started with
 	nano::election_insertion_result insert_impl (nano::unique_lock<nano::mutex> &, std::shared_ptr<nano::block> const &, nano::election_behavior = nano::election_behavior::normal, std::function<void (std::shared_ptr<nano::block> const &)> const & = nullptr);

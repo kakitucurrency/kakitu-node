@@ -331,10 +331,14 @@ enum class detail : uint8_t
 	// active
 	started_hinted,
 	started_optimistic,
+	election_winner_details_overflow,
 
 	// optimistic
 	pop_gap,
 	pop_leaf,
+
+	// blockprocessor
+	backlog_full,
 
 	_last // Must be the last enum
 };

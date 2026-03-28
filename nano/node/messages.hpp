@@ -68,6 +68,10 @@ public:
 	void block_type_set (nano::block_type);
 	uint8_t count_get () const;
 	void count_set (uint8_t);
+	// Extended 8-bit count using bits 8-15 (block_type + count fields combined)
+	// Used for confirm_ack to support up to 255 hashes
+	uint8_t count_get_extended () const;
+	void count_set_extended (uint8_t);
 	nano::networks network;
 	uint8_t version_max;
 	uint8_t version_using;

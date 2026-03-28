@@ -155,7 +155,9 @@ public:
 	static unsigned const broadcast_interval_ms = 10;
 	static std::size_t const buffer_size = 512;
 	static std::size_t const confirm_req_hashes_max = 7;
-	static std::size_t const confirm_ack_hashes_max = 12;
+	// Extended to 255 from 12: uses 8-bit count field (bits 8-15 of header extensions)
+	// This requires nodes to send/receive using the extended count encoding for confirm_ack
+	static std::size_t const confirm_ack_hashes_max = 255;
 };
 std::unique_ptr<container_info_component> collect_container_info (network & network, std::string const & name);
 }

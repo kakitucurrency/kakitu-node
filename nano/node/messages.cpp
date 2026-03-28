@@ -203,6 +203,21 @@ void nano::message_header::count_set (uint8_t count_a)
 	extensions |= std::bitset<16> (static_cast<unsigned long long> (count_a) << 12);
 }
 
+// Extended 8-bit count using bits 8-15 (block_type bits + count bits combined).
+// Used for confirm_ack to support batches of up to 255 hashes.
+static std::bitset<16> constexpr extended_count_mask{ 0xff00 };
+
+uint8_t nano::message_header::count_get_extended () const
+{
+	return static_cast<uint8_t> (((extensions & extended_count_mask) >> 8).to_ullong ());
+}
+
+void nano::message_header::count_set_extended (uint8_t count_a)
+{
+	extensions &= ~extended_count_mask;
+	extensions |= std::bitset<16> (static_cast<unsigned long long> (count_a) << 8);
+}
+
 void nano::message_header::flag_set (uint8_t flag_a, bool enable)
 {
 	// Flags from 8 are block_type & count
@@ -281,7 +296,8 @@ std::size_t nano::message_header::payload_length_bytes () const
 		}
 		case nano::message_type::confirm_ack:
 		{
-			return nano::confirm_ack::size (count_get ());
+			// Use extended 8-bit count to support up to 255 hashes per confirm_ack
+			return nano::confirm_ack::size (count_get_extended ());
 		}
 		case nano::message_type::confirm_req:
 		{
@@ -682,9 +698,9 @@ nano::confirm_ack::confirm_ack (nano::network_constants const & constants, std::
 	message (constants, nano::message_type::confirm_ack),
 	vote (vote_a)
 {
-	header.block_type_set (nano::block_type::not_a_block);
-	debug_assert (vote_a->hashes.size () < 16);
-	header.count_set (static_cast<uint8_t> (vote_a->hashes.size ()));
+	// Use extended 8-bit count (bits 8-15) to support up to 255 hashes per vote message
+	debug_assert (vote_a->hashes.size () <= nano::network::confirm_ack_hashes_max);
+	header.count_set_extended (static_cast<uint8_t> (vote_a->hashes.size ()));
 }
 
 void nano::confirm_ack::serialize (nano::stream & stream_a) const

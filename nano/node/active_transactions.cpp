@@ -165,6 +165,12 @@ void nano::active_transactions::block_cemented_callback (std::shared_ptr<nano::b
 void nano::active_transactions::add_election_winner_details (nano::block_hash const & hash_a, std::shared_ptr<nano::election> const & election_a)
 {
 	nano::lock_guard<nano::mutex> guard{ election_winner_details_mutex };
+	if (election_winner_details.size () >= election_winner_details_max)
+	{
+		// Drop oldest entry to prevent unbounded memory growth
+		election_winner_details.erase (election_winner_details.begin ());
+		node.stats.inc (nano::stat::type::active, nano::stat::detail::election_winner_details_overflow);
+	}
 	election_winner_details.emplace (hash_a, election_a);
 }
 
