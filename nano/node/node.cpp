@@ -407,6 +407,42 @@ nano::node::node (boost::asio::io_context & io_ctx_a, boost::filesystem::path co
 			std::exit (1);
 		}
 
+		// Re-verify genesis block signature on every startup to detect ledger corruption
+		{
+			auto const transaction (store.tx_begin_read ());
+			auto genesis_block = store.block.get (transaction, ledger.constants.genesis->hash ());
+			if (genesis_block)
+			{
+				bool sig_valid = !nano::validate_message (ledger.constants.genesis->account (), genesis_block->hash (), genesis_block->block_signature ());
+				if (!sig_valid)
+				{
+					logger.always_log ("FATAL: Genesis block signature verification failed - ledger may be corrupted");
+					std::cerr << "FATAL: Genesis block signature verification failed" << std::endl;
+					std::abort ();
+				}
+			}
+		}
+
+		// Ledger integrity check: verify total rep weights are within 1% of genesis supply
+		{
+			auto const rep_amounts = ledger.cache.rep_weights.get_rep_amounts ();
+			nano::uint128_t total_weight = 0;
+			for (auto const & entry : rep_amounts)
+			{
+				total_weight += entry.second;
+			}
+			auto const genesis_supply = ledger.constants.genesis_amount;
+			if (genesis_supply > 0 && total_weight > genesis_supply)
+			{
+				logger.always_log (boost::str (boost::format ("WARNING: Total rep weight (%1%) exceeds genesis supply (%2%) - ledger may be corrupt") % total_weight % genesis_supply));
+			}
+			else if (genesis_supply > 0 && total_weight < genesis_supply / 100 * 99 && ledger.cache.block_count > 1)
+			{
+				// Only warn if block_count > 1 to avoid false positives on fresh node
+				logger.always_log (boost::str (boost::format ("INFO: Total rep weight (%1%) is less than 99%% of genesis supply (%2%)") % total_weight % genesis_supply));
+			}
+		}
+
 		if (config.enable_voting)
 		{
 			std::ostringstream stream;
