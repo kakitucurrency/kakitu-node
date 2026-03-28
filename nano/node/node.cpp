@@ -751,6 +751,36 @@ void nano::node::start ()
 	}
 	websocket.start ();
 	telemetry.start ();
+	// Start periodic node health checks (every 30 seconds)
+	ongoing_node_health_check ();
+}
+
+void nano::node::ongoing_node_health_check ()
+{
+	auto this_l (shared ());
+	workers.add_timed_task (std::chrono::steady_clock::now () + std::chrono::seconds (30), [this_l] () {
+		if (this_l->stopped)
+		{
+			return;
+		}
+		// Alert: low peer count relative to configured peers
+		if (this_l->network.size () < this_l->config.preconfigured_peers.size () / 2)
+		{
+			this_l->logger.always_log (boost::str (boost::format ("WARNING: Low peer count %1% (expected at least %2%)") % this_l->network.size () % (this_l->config.preconfigured_peers.size () / 2)));
+		}
+		// Alert: block backlog approaching maximum
+		auto backlog_ratio = static_cast<double> (this_l->active.size ()) / static_cast<double> (nano::active_transactions::max_uncemented_backlog);
+		if (backlog_ratio > 0.9)
+		{
+			this_l->logger.always_log (boost::str (boost::format ("WARNING: Active election backlog at %.1f%% of maximum (%2% / %3%)") % (backlog_ratio * 100) % this_l->active.size () % nano::active_transactions::max_uncemented_backlog));
+		}
+		// Alert: vote processor queue more than half full
+		if (this_l->vote_processor.half_full ())
+		{
+			this_l->logger.always_log (boost::str (boost::format ("WARNING: Vote processor queue is more than half full (%1% votes queued)") % this_l->vote_processor.size ()));
+		}
+		this_l->ongoing_node_health_check ();
+	});
 }
 
 void nano::node::stop ()

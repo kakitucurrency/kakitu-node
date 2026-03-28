@@ -107,6 +107,7 @@ public:
 	void sign ();
 	void stats ();
 	void stats_clear ();
+	void metrics ();
 	void stop ();
 	void telemetry ();
 	void unchecked ();

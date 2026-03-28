@@ -100,6 +100,7 @@ public:
 	void ongoing_rep_calculation ();
 	void ongoing_bootstrap ();
 	void ongoing_peer_store ();
+	void ongoing_node_health_check ();
 	void ongoing_unchecked_cleanup ();
 	void backup_wallet ();
 	void search_receivable_all ();

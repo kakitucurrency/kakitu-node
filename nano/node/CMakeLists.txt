@@ -116,6 +116,8 @@ add_library(
   json_handler.cpp
   ledger_walker.hpp
   ledger_walker.cpp
+  prometheus.hpp
+  prometheus.cpp
   lmdb/account_store.hpp
   lmdb/account_store.cpp
   lmdb/block_store.hpp

@@ -8,6 +8,7 @@
 #include <nano/node/json_handler.hpp>
 #include <nano/node/node.hpp>
 #include <nano/node/node_rpc_config.hpp>
+#include <nano/node/prometheus.hpp>
 #include <nano/node/telemetry.hpp>
 
 #include <boost/property_tree/json_parser.hpp>
@@ -3966,6 +3967,14 @@ void nano::json_handler::stats ()
 		boost::property_tree::write_json (ostream, stat_tree_l);
 		response (ostream.str ());
 	}
+	else if (!ec)
+	{
+		// Add operational metrics to all non-sink stats responses
+		response_l.put ("peer_count", node.network.size ());
+		response_l.put ("active_elections", node.active.size ());
+		response_l.put ("block_processor_queue", node.block_processor.size ());
+		response_errors ();
+	}
 	else
 	{
 		response_errors ();
@@ -3979,6 +3988,12 @@ void nano::json_handler::stats_clear ()
 	std::stringstream ostream;
 	boost::property_tree::write_json (ostream, response_l);
 	response (ostream.str ());
+}
+
+void nano::json_handler::metrics ()
+{
+	auto prom = nano::to_prometheus_format (node.stats, node.ledger, node.network, node.active, node.unchecked);
+	response (prom);
 }
 
 void nano::json_handler::stop ()
@@ -5405,6 +5420,7 @@ ipc_json_handler_no_arg_func_map create_ipc_json_handler_no_arg_func_map ()
 	no_arg_funcs.emplace ("sign", &nano::json_handler::sign);
 	no_arg_funcs.emplace ("stats", &nano::json_handler::stats);
 	no_arg_funcs.emplace ("stats_clear", &nano::json_handler::stats_clear);
+	no_arg_funcs.emplace ("metrics", &nano::json_handler::metrics);
 	no_arg_funcs.emplace ("stop", &nano::json_handler::stop);
 	no_arg_funcs.emplace ("telemetry", &nano::json_handler::telemetry);
 	no_arg_funcs.emplace ("unchecked", &nano::json_handler::unchecked);
