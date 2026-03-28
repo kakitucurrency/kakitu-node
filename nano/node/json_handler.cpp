@@ -3963,17 +3963,13 @@ void nano::json_handler::stats ()
 	{
 		auto stat_tree_l (*static_cast<boost::property_tree::ptree *> (sink->to_object ()));
 		stat_tree_l.put ("stat_duration_seconds", node.stats.last_reset ().count ());
+		// Add operational node metrics to counters/samples responses
+		stat_tree_l.put ("peer_count", node.network.size ());
+		stat_tree_l.put ("active_elections", node.active.size ());
+		stat_tree_l.put ("block_processor_queue", node.block_processor.size ());
 		std::stringstream ostream;
 		boost::property_tree::write_json (ostream, stat_tree_l);
 		response (ostream.str ());
-	}
-	else if (!ec)
-	{
-		// Add operational metrics to all non-sink stats responses
-		response_l.put ("peer_count", node.network.size ());
-		response_l.put ("active_elections", node.active.size ());
-		response_l.put ("block_processor_queue", node.block_processor.size ());
-		response_errors ();
 	}
 	else
 	{
