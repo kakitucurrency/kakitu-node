@@ -1348,7 +1348,7 @@ nano::node_id_handshake::node_id_handshake (nano::network_constants const & cons
 	if (response)
 	{
 		header.flag_set (response_flag);
-		header.flag_set (v2_flag, response->v2.has_value ()); // We only use V2 handshake when replying to peers that indicated support for it
+		header.flag_set (v2_flag); // Always require V2 handshake — V1 legacy removed
 	}
 }
 
@@ -1477,42 +1477,32 @@ void nano::node_id_handshake::query_payload::deserialize (nano::stream & stream)
 
 void nano::node_id_handshake::response_payload::serialize (nano::stream & stream) const
 {
-	if (v2)
-	{
-		nano::write (stream, node_id);
-		nano::write (stream, v2->salt);
-		nano::write (stream, v2->genesis);
-		nano::write (stream, signature);
-	}
-	// TODO: Remove legacy handshake
-	else
-	{
-		nano::write (stream, node_id);
-		nano::write (stream, signature);
-	}
+	// V2 handshake required — includes genesis hash to prove correct network
+	debug_assert (v2 && "V1 legacy handshake removed — V2 is required");
+	nano::write (stream, node_id);
+	nano::write (stream, v2->salt);
+	nano::write (stream, v2->genesis);
+	nano::write (stream, signature);
 }
 
 void nano::node_id_handshake::response_payload::deserialize (nano::stream & stream, nano::message_header const & header)
 {
-	if (is_v2 (header))
+	// V2 handshake required — reject V1
+	if (!is_v2 (header))
 	{
-		nano::read (stream, node_id);
-		v2_payload pld{};
-		nano::read (stream, pld.salt);
-		nano::read (stream, pld.genesis);
-		v2 = pld;
-		nano::read (stream, signature);
+		throw std::runtime_error ("V1 legacy handshake rejected — V2 required");
 	}
-	else
-	{
-		nano::read (stream, node_id);
-		nano::read (stream, signature);
-	}
+	nano::read (stream, node_id);
+	v2_payload pld{};
+	nano::read (stream, pld.salt);
+	nano::read (stream, pld.genesis);
+	v2 = pld;
+	nano::read (stream, signature);
 }
 
 std::size_t nano::node_id_handshake::response_payload::size (const nano::message_header & header)
 {
-	return is_v2 (header) ? size_v2 : size_v1;
+	return size_v2; // V1 legacy removed — always V2
 }
 
 std::vector<uint8_t> nano::node_id_handshake::response_payload::data_to_sign (const nano::uint256_union & cookie) const
@@ -1521,17 +1511,11 @@ std::vector<uint8_t> nano::node_id_handshake::response_payload::data_to_sign (co
 	{
 		nano::vectorstream stream{ bytes };
 
-		if (v2)
-		{
-			nano::write (stream, cookie);
-			nano::write (stream, v2->salt);
-			nano::write (stream, v2->genesis);
-		}
-		// TODO: Remove legacy handshake
-		else
-		{
-			nano::write (stream, cookie);
-		}
+		// V2 handshake required — sign cookie + salt + genesis
+		debug_assert (v2 && "V1 legacy handshake removed — V2 is required");
+		nano::write (stream, cookie);
+		nano::write (stream, v2->salt);
+		nano::write (stream, v2->genesis);
 	}
 	return bytes;
 }

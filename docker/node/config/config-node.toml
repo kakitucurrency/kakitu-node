@@ -3,6 +3,12 @@
 # Bind address for the node
 # type:string,ip
 peering_port = 44075
+# Enable voting (required for genesis/representative nodes)
+# type:bool
+enable_voting = true
+# Minimum online weight for quorum (low for single-node bootstrap)
+# type:string
+online_weight_minimum = "1"
 
 [node.websocket]
 

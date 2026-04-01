@@ -17,8 +17,14 @@ char const * signature_checker_threads_key = "signature_checker_threads";
 char const * pow_sleep_interval_key = "pow_sleep_interval";
 std::string const default_live_peer_network = nano::get_env_or_default ("KAKITU_DEFAULT_PEER", "");
 std::string const default_test_peer_network = nano::get_env_or_default ("KAKITU_DEFAULT_PEER", "");
-// Additional live network peers — add entries here when more nodes join the network
-std::vector<std::string> const additional_live_peers = {};
+// Additional live network peers — geographically distributed to avoid SPOF
+std::vector<std::string> const additional_live_peers = {
+	"peering.kakitu.org",
+	"node1.kakitu.africa",
+	"node2.kakitu.africa",
+	"peering-eu.kakitu.org",
+	"peering-us.kakitu.org",
+};
 }
 
 nano::node_config::node_config (nano::network_params & network_params) :
