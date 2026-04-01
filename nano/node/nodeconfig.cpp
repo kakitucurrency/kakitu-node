@@ -15,10 +15,10 @@ namespace
 char const * preconfigured_peers_key = "preconfigured_peers";
 char const * signature_checker_threads_key = "signature_checker_threads";
 char const * pow_sleep_interval_key = "pow_sleep_interval";
-std::string const default_live_peer_network = nano::get_env_or_default ("KAKITU_DEFAULT_PEER", "peering.kakitu.org");
-std::string const default_test_peer_network = nano::get_env_or_default ("KAKITU_DEFAULT_PEER", "peering-test.kakitu.org");
-// Additional live network peers for redundancy
-std::vector<std::string> const additional_live_peers = { "node1.kakitu.org", "node2.kakitu.org" };
+std::string const default_live_peer_network = nano::get_env_or_default ("KAKITU_DEFAULT_PEER", "");
+std::string const default_test_peer_network = nano::get_env_or_default ("KAKITU_DEFAULT_PEER", "");
+// Additional live network peers — add entries here when more nodes join the network
+std::vector<std::string> const additional_live_peers = {};
 }
 
 nano::node_config::node_config (nano::network_params & network_params) :
@@ -52,7 +52,10 @@ nano::node_config::node_config (const std::optional<uint16_t> & peering_port_a, 
 			preconfigured_representatives.push_back (network_params.ledger.genesis->account ());
 			break;
 		case nano::networks::kshs_live_network:
-			preconfigured_peers.emplace_back (default_live_peer_network);
+			if (!default_live_peer_network.empty ())
+			{
+				preconfigured_peers.emplace_back (default_live_peer_network);
+			}
 			for (auto const & peer : additional_live_peers)
 			{
 				preconfigured_peers.emplace_back (peer);
