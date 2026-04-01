@@ -112,9 +112,22 @@ void nano::hinted_scheduler::run ()
 			// We don't need the lock when running main loop
 			lock.unlock ();
 
+			// Batch process: attempt multiple hints per iteration for better spam resilience
 			if (predicate (minimum_tally))
 			{
-				run_one (minimum_tally);
+				unsigned hinted_count = 0;
+				constexpr unsigned max_hints_per_iteration = 8;
+				while (hinted_count < max_hints_per_iteration && predicate (minimum_tally))
+				{
+					if (run_one (minimum_tally))
+					{
+						++hinted_count;
+					}
+					else
+					{
+						break; // No more candidates
+					}
+				}
 			}
 
 			lock.lock ();

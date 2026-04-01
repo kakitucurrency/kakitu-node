@@ -27,21 +27,13 @@ nano::bootstrap_ascending::service::service (nano::node_config & config_a, nano:
 	scoring{ config.bootstrap_ascending, config.network_params.network },
 	database_limiter{ config.bootstrap_ascending.database_requests_limit, 1.0 }
 {
-	// TODO: This is called from a very congested blockprocessor thread. Offload this work to a dedicated processing thread
+	// Offload batch_processed work from congested blockprocessor thread to dedicated bootstrap thread
 	block_processor.batch_processed.add ([this] (auto const & batch) {
 		{
-			nano::lock_guard<nano::mutex> lock{ mutex };
-
-			auto transaction = ledger.store.tx_begin_read ();
-			for (auto const & [result, block] : batch)
-			{
-				debug_assert (block != nullptr);
-
-				inspect (transaction, result, *block);
-			}
+			nano::lock_guard<nano::mutex> lock{ batch_mutex };
+			pending_batches.emplace_back (batch.begin (), batch.end ());
 		}
-
-		condition.notify_all ();
+		batch_condition.notify_one ();
 	});
 }
 
@@ -50,12 +42,19 @@ nano::bootstrap_ascending::service::~service ()
 	// All threads must be stopped before destruction
 	debug_assert (!thread.joinable ());
 	debug_assert (!timeout_thread.joinable ());
+	debug_assert (!batch_thread.joinable ());
 }
 
 void nano::bootstrap_ascending::service::start ()
 {
 	debug_assert (!thread.joinable ());
 	debug_assert (!timeout_thread.joinable ());
+	debug_assert (!batch_thread.joinable ());
+
+	batch_thread = std::thread ([this] () {
+		nano::thread_role::set (nano::thread_role::name::ascending_bootstrap);
+		process_batch_queue ();
+	});
 
 	thread = std::thread ([this] () {
 		nano::thread_role::set (nano::thread_role::name::ascending_bootstrap);
@@ -74,8 +73,44 @@ void nano::bootstrap_ascending::service::stop ()
 	stopped = true;
 	lock.unlock ();
 	condition.notify_all ();
+	batch_condition.notify_all ();
 	nano::join_or_pass (thread);
 	nano::join_or_pass (timeout_thread);
+	nano::join_or_pass (batch_thread);
+}
+
+void nano::bootstrap_ascending::service::process_batch_queue ()
+{
+	while (!stopped)
+	{
+		std::deque<std::pair<nano::process_return, std::shared_ptr<nano::block>>> batch;
+		{
+			nano::unique_lock<nano::mutex> lock{ batch_mutex };
+			batch_condition.wait (lock, [this] () { return stopped || !pending_batches.empty (); });
+			if (stopped)
+			{
+				return;
+			}
+			if (!pending_batches.empty ())
+			{
+				batch = std::move (pending_batches.front ());
+				pending_batches.pop_front ();
+			}
+		}
+		if (!batch.empty ())
+		{
+			{
+				nano::lock_guard<nano::mutex> lock{ mutex };
+				auto transaction = ledger.store.tx_begin_read ();
+				for (auto const & [result, block] : batch)
+				{
+					debug_assert (block != nullptr);
+					inspect (transaction, result, *block);
+				}
+			}
+			condition.notify_all ();
+		}
+	}
 }
 
 void nano::bootstrap_ascending::service::send (std::shared_ptr<nano::transport::channel> channel, async_tag tag)

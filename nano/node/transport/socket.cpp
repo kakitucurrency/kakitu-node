@@ -422,14 +422,50 @@ std::optional<nano::transport::socket::write_queue::entry> nano::transport::sock
 		return std::nullopt;
 	};
 
-	// TODO: This is a very basic prioritization, implement something more advanced and configurable
-	if (auto item = try_pop (nano::transport::traffic_type::generic))
+	// Weighted fair queuing: generic (votes/keepalive) gets 10x weight over bootstrap
+	// Uses deficit round-robin: serve the queue with the highest accumulated deficit
+	static thread_local std::unordered_map<nano::transport::traffic_type, int> deficit;
+	static constexpr int weight_generic = 10;
+	static constexpr int weight_bootstrap = 1;
+
+	auto add_deficit = [&] () {
+		if (queues.count (nano::transport::traffic_type::generic) && !queues[nano::transport::traffic_type::generic].empty ())
+		{
+			deficit[nano::transport::traffic_type::generic] += weight_generic;
+		}
+		if (queues.count (nano::transport::traffic_type::bootstrap) && !queues[nano::transport::traffic_type::bootstrap].empty ())
+		{
+			deficit[nano::transport::traffic_type::bootstrap] += weight_bootstrap;
+		}
+	};
+
+	add_deficit ();
+
+	// Serve the queue with the highest deficit
+	nano::transport::traffic_type best = nano::transport::traffic_type::generic;
+	int best_deficit = -1;
+	for (auto const & [type, que] : queues)
 	{
+		if (!que.empty () && deficit[type] > best_deficit)
+		{
+			best_deficit = deficit[type];
+			best = type;
+		}
+	}
+
+	if (auto item = try_pop (best))
+	{
+		deficit[best] = 0;
 		return item;
 	}
-	if (auto item = try_pop (nano::transport::traffic_type::bootstrap))
+	// Fallback: try any non-empty queue
+	for (auto const & [type, que] : queues)
 	{
-		return item;
+		if (auto item = try_pop (type))
+		{
+			deficit[type] = 0;
+			return item;
+		}
 	}
 
 	return std::nullopt;

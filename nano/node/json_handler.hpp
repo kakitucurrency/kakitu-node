@@ -8,7 +8,9 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include <functional>
+#include <mutex>
 #include <string>
+#include <unordered_map>
 
 namespace nano
 {
@@ -18,6 +20,23 @@ namespace ipc
 }
 class node;
 class node_rpc_config;
+
+/** Per-IP token bucket rate limiter for RPC requests */
+class rpc_rate_limiter
+{
+public:
+	/** Check if a request from this IP is allowed (consumes a token if so) */
+	bool allow (std::string const & ip, unsigned max_per_second = 100);
+
+private:
+	struct bucket
+	{
+		double tokens{ 100.0 };
+		std::chrono::steady_clock::time_point last_refill{ std::chrono::steady_clock::now () };
+	};
+	std::unordered_map<std::string, bucket> buckets;
+	std::mutex mutex;
+};
 
 class json_handler : public std::enable_shared_from_this<nano::json_handler>
 {

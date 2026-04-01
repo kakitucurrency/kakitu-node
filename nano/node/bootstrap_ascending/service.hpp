@@ -131,7 +131,14 @@ namespace bootstrap_ascending
 		nano::bootstrap_ascending::account_sets::info_t info () const;
 
 	private:
-		nano::bootstrap_ascending::account_sets accounts;
+		/** Lightweight queue for offloading batch_processed work from block processor thread */
+	void process_batch_queue ();
+	std::deque<std::deque<std::pair<nano::process_return, std::shared_ptr<nano::block>>>> pending_batches;
+	nano::mutex batch_mutex;
+	nano::condition_variable batch_condition;
+	std::thread batch_thread;
+
+	nano::bootstrap_ascending::account_sets accounts;
 		nano::bootstrap_ascending::buffered_iterator iterator;
 		nano::bootstrap_ascending::throttle throttle;
 		// Calculates a lookback size based on the size of the ledger where larger ledgers have a larger sample count

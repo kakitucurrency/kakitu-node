@@ -279,6 +279,8 @@ public:
 	/** Maximum number of peers per subnetwork */
 	size_t max_peers_per_subnetwork;
 	size_t ipv6_subnetwork_prefix_for_limiting;
+	/** Maximum percentage of connections from a single /20 IPv4 subnet (0-100, default 20%) */
+	unsigned max_peers_per_subnet_percent{ 20 };
 	std::chrono::seconds peer_dump_interval;
 	/** Time to wait before vote rebroadcasts for active elections (milliseconds) */
 	uint64_t vote_broadcast_interval;

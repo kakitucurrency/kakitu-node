@@ -69,7 +69,7 @@ void nano::block_processor::flush ()
 std::size_t nano::block_processor::size ()
 {
 	nano::unique_lock<nano::mutex> lock{ mutex };
-	return (blocks.size () + state_block_signature_verification.size () + forced.size ());
+	return (blocks.size () + source_queues_size + state_block_signature_verification.size () + forced.size ());
 }
 
 bool nano::block_processor::full ()
@@ -82,7 +82,7 @@ bool nano::block_processor::half_full ()
 	return size () >= node.flags.block_processor_full_size / 2;
 }
 
-void nano::block_processor::add (std::shared_ptr<nano::block> const & block)
+void nano::block_processor::add (std::shared_ptr<nano::block> const & block, uint64_t source)
 {
 	if (full ())
 	{
@@ -100,7 +100,7 @@ void nano::block_processor::add (std::shared_ptr<nano::block> const & block)
 		node.stats.inc (nano::stat::type::blockprocessor, nano::stat::detail::insufficient_work);
 		return;
 	}
-	add_impl (block);
+	add_impl (block, source);
 	return;
 }
 
@@ -112,7 +112,16 @@ std::optional<nano::process_return> nano::block_processor::add_blocking (std::sh
 	std::optional<nano::process_return> result;
 	try
 	{
-		result = future.get ();
+		// Timeout prevents RPC thread starvation under high load
+		auto status = future.wait_for (std::chrono::seconds (10));
+		if (status == std::future_status::ready)
+		{
+			result = future.get ();
+		}
+		else
+		{
+			node.stats.inc (nano::stat::type::blockprocessor, nano::stat::detail::process_blocking_timeout);
+		}
 	}
 	catch (std::future_error const &)
 	{
@@ -166,7 +175,7 @@ bool nano::block_processor::should_log ()
 bool nano::block_processor::have_blocks_ready ()
 {
 	debug_assert (!mutex.try_lock ());
-	return !blocks.empty () || !forced.empty ();
+	return !blocks.empty () || !forced.empty () || source_queues_size > 0;
 }
 
 bool nano::block_processor::have_blocks ()
@@ -208,7 +217,7 @@ void nano::block_processor::process_verified_state_blocks (std::deque<nano::stat
 	condition.notify_all ();
 }
 
-void nano::block_processor::add_impl (std::shared_ptr<nano::block> block)
+void nano::block_processor::add_impl (std::shared_ptr<nano::block> block, uint64_t source)
 {
 	if (block->type () == nano::block_type::state || block->type () == nano::block_type::open)
 	{
@@ -218,10 +227,56 @@ void nano::block_processor::add_impl (std::shared_ptr<nano::block> block)
 	{
 		{
 			nano::lock_guard<nano::mutex> guard{ mutex };
-			blocks.emplace_back (block);
+			if (source != 0)
+			{
+				source_queues[source].emplace_back (block);
+				++source_queues_size;
+			}
+			else
+			{
+				blocks.emplace_back (block);
+			}
 		}
 		condition.notify_all ();
 	}
+}
+
+std::shared_ptr<nano::block> nano::block_processor::fair_dequeue ()
+{
+	debug_assert (!mutex.try_lock ());
+	// If source queues have entries, round-robin across them
+	if (source_queues_size > 0)
+	{
+		auto it = source_queues.upper_bound (last_served_source);
+		if (it == source_queues.end ())
+		{
+			it = source_queues.begin ();
+		}
+		while (!it->second.empty () || it != source_queues.end ())
+		{
+			if (!it->second.empty ())
+			{
+				auto block = it->second.front ();
+				it->second.pop_front ();
+				--source_queues_size;
+				last_served_source = it->first;
+				if (it->second.empty ())
+				{
+					source_queues.erase (it);
+				}
+				return block;
+			}
+			++it;
+		}
+	}
+	// Fallback to legacy FIFO queue
+	if (!blocks.empty ())
+	{
+		auto block = blocks.front ();
+		blocks.pop_front ();
+		return block;
+	}
+	return nullptr;
 }
 
 auto nano::block_processor::process_batch (nano::unique_lock<nano::mutex> & lock_a) -> std::deque<processed_t>
@@ -248,8 +303,7 @@ auto nano::block_processor::process_batch (nano::unique_lock<nano::mutex> & lock
 		bool force (false);
 		if (forced.empty ())
 		{
-			block = blocks.front ();
-			blocks.pop_front ();
+			block = fair_dequeue ();
 			hash = block->hash ();
 		}
 		else

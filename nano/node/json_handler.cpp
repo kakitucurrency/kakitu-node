@@ -18,6 +18,25 @@
 #include <chrono>
 #include <vector>
 
+bool nano::rpc_rate_limiter::allow (std::string const & ip, unsigned max_per_second)
+{
+	std::lock_guard<std::mutex> lock{ mutex };
+	auto now = std::chrono::steady_clock::now ();
+	auto & b = buckets[ip];
+	auto elapsed = std::chrono::duration<double> (now - b.last_refill).count ();
+	b.tokens = std::min (static_cast<double> (max_per_second), b.tokens + elapsed * max_per_second);
+	b.last_refill = now;
+	if (b.tokens >= 1.0)
+	{
+		b.tokens -= 1.0;
+		return true;
+	}
+	return false;
+}
+
+// Global RPC rate limiter instance
+static nano::rpc_rate_limiter global_rpc_rate_limiter;
+
 namespace
 {
 void construct_json (nano::container_info_component * component, boost::property_tree::ptree & parent);
@@ -98,6 +117,8 @@ void nano::json_handler::process_request (bool unsafe_a)
 			else if (action == "history")
 			{
 				response_l.put ("deprecated", "1");
+				response_l.put ("sunset_date", "2026-12-01");
+				response_l.put ("sunset_notice", "Use 'account_history' instead. This endpoint will be removed after the sunset date.");
 				request.put ("head", request.get<std::string> ("hash"));
 				account_history ();
 			}
@@ -4326,9 +4347,10 @@ void nano::json_handler::uptime ()
 void nano::json_handler::version ()
 {
 	response_l.put ("rpc_version", "1");
+	response_l.put ("api_version", "1");
 	response_l.put ("store_version", std::to_string (node.store_version ()));
 	response_l.put ("protocol_version", std::to_string (node.network_params.network.protocol_version));
-	response_l.put ("node_vendor", boost::str (boost::format ("Nano %1%") % NANO_VERSION_STRING));
+	response_l.put ("node_vendor", boost::str (boost::format ("Kakitu %1%") % NANO_VERSION_STRING));
 	response_l.put ("store_vendor", node.store.vendor_get ());
 	response_l.put ("network", node.network_params.network.get_current_network_as_string ());
 	response_l.put ("network_identifier", node.network_params.ledger.genesis->hash ().to_string ());

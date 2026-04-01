@@ -58,6 +58,7 @@ nano::prioritization::prioritization (uint64_t maximum) :
 		}
 	};
 	minimums.push_back (uint128_t{ 0 });
+	build_region (uint128_t{ 1 } << 80, uint128_t{ 1 } << 88, 1); // 63rd bucket: small-value retail transactions (faucets, minimum-receive)
 	build_region (uint128_t{ 1 } << 88, uint128_t{ 1 } << 92, 2);
 	build_region (uint128_t{ 1 } << 92, uint128_t{ 1 } << 96, 4);
 	build_region (uint128_t{ 1 } << 96, uint128_t{ 1 } << 100, 8);

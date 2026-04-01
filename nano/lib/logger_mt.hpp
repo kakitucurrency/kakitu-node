@@ -129,11 +129,64 @@ public:
 		return try_log (nano::severity_level::normal, std::forward<LogItems> (log_items)...);
 	}
 
+	/** Structured log: emits a key=value formatted log line for machine parsing */
+	template <typename... LogItems>
+	void structured_log (std::string const & component, std::string const & event, LogItems &&... log_items)
+	{
+		auto now = std::chrono::system_clock::now ();
+		auto epoch = std::chrono::duration_cast<std::chrono::milliseconds> (now.time_since_epoch ()).count ();
+		always_log ("ts=", epoch, " component=", component, " event=", event, " ", std::forward<LogItems> (log_items)...);
+	}
+
 	std::chrono::milliseconds min_log_delta{ 0 };
 
 private:
 	nano::mutex last_log_time_mutex;
 	std::chrono::steady_clock::time_point last_log_time;
 	boost::log::sources::severity_logger_mt<severity_level> boost_logger_mt;
+};
+
+/**
+ * Alerting webhook: POSTs JSON alerts when critical thresholds are crossed.
+ * Configurable via node config `alert_webhook_url`.
+ */
+class alert_webhook
+{
+public:
+	enum class alert_type
+	{
+		vote_processor_full,
+		block_processor_stalled,
+		peer_count_low,
+		confirmation_rate_low
+	};
+
+	static char const * alert_type_string (alert_type type)
+	{
+		switch (type)
+		{
+			case alert_type::vote_processor_full:
+				return "vote_processor_full";
+			case alert_type::block_processor_stalled:
+				return "block_processor_stalled";
+			case alert_type::peer_count_low:
+				return "peer_count_low";
+			case alert_type::confirmation_rate_low:
+				return "confirmation_rate_low";
+			default:
+				return "unknown";
+		}
+	}
+
+	/** Fire an alert (rate-limited to once per minute per alert type) */
+	void fire (alert_type type, std::string const & message);
+	/** Set the webhook URL */
+	void set_url (std::string const & url) { webhook_url = url; }
+	bool enabled () const { return !webhook_url.empty (); }
+
+private:
+	std::string webhook_url;
+	std::unordered_map<int, std::chrono::steady_clock::time_point> last_fired;
+	nano::mutex mutex;
 };
 }

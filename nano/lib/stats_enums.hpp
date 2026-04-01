@@ -339,6 +339,10 @@ enum class detail : uint8_t
 
 	// blockprocessor
 	backlog_full,
+	process_blocking_timeout,
+
+	// active
+	election_winner_details_already_cemented,
 
 	_last // Must be the last enum
 };

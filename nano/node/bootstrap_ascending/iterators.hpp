@@ -50,7 +50,7 @@ namespace bootstrap_ascending
 		database_iterator accounts_iterator;
 		database_iterator pending_iterator;
 
-		static std::size_t constexpr size = 1024;
+		static std::size_t constexpr size = 4096; // Bulk frontier scanning: larger batch for faster cold sync
 	};
 } // nano
 } // bootstrap_ascending

@@ -165,6 +165,17 @@ void nano::active_transactions::block_cemented_callback (std::shared_ptr<nano::b
 void nano::active_transactions::add_election_winner_details (nano::block_hash const & hash_a, std::shared_ptr<nano::election> const & election_a)
 {
 	nano::lock_guard<nano::mutex> guard{ election_winner_details_mutex };
+	// Race condition guard: if the block was already cemented before we could add it here,
+	// the confirmation height processor may have already called block_already_cemented_callback.
+	// Check if the block is already confirmed to avoid stale entries.
+	auto transaction = node.store.tx_begin_read ();
+	auto info = node.ledger.block_confirmed (transaction, hash_a);
+	if (info)
+	{
+		// Block already cemented — don't add to winner details, it would never be drained
+		node.stats.inc (nano::stat::type::active, nano::stat::detail::election_winner_details_already_cemented);
+		return;
+	}
 	if (election_winner_details.size () >= election_winner_details_max)
 	{
 		// Drop oldest entry to prevent unbounded memory growth
@@ -486,7 +497,14 @@ nano::vote_code nano::active_transactions::vote (std::shared_ptr<nano::vote> con
 		if (processed)
 		{
 			auto const reps (node.wallets.reps ());
-			if (!reps.have_half_rep () && !reps.exists (vote_a->account))
+			bool const is_final = (vote_a->timestamp () == nano::vote::timestamp_max);
+			if (is_final)
+			{
+				// Final votes get priority propagation: flood to all PRs immediately, then wider broadcast
+				node.network.flood_vote_pr (vote_a);
+				node.network.flood_vote (vote_a, 1.0f);
+			}
+			else if (!reps.have_half_rep () && !reps.exists (vote_a->account))
 			{
 				node.network.flood_vote (vote_a, 0.5f);
 			}

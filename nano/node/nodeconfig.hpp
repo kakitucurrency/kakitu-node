@@ -78,6 +78,10 @@ public:
 	std::string callback_address;
 	uint16_t callback_port{ 0 };
 	std::string callback_target;
+	/** Use TLS for HTTP callbacks (recommended for production) */
+	bool callback_tls{ false };
+	/** Webhook URL for critical state alerts (empty = disabled) */
+	std::string alert_webhook_url;
 	bool allow_local_peers{ !(network_params.network.is_live_network () || network_params.network.is_test_network ()) }; // disable by default for live network
 	nano::stats_config stats_config;
 	nano::ipc::ipc_config ipc_config;

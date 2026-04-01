@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <future>
+#include <map>
 #include <memory>
 #include <thread>
 
@@ -31,9 +32,16 @@ public:
 	std::size_t size ();
 	bool full ();
 	bool half_full ();
-	void add (std::shared_ptr<nano::block> const &);
+	void add (std::shared_ptr<nano::block> const &, uint64_t source = 0);
 	std::optional<nano::process_return> add_blocking (std::shared_ptr<nano::block> const & block);
 	void force (std::shared_ptr<nano::block> const &);
+
+	/** Fair queue: per-source sub-queues with round-robin draining */
+	struct source_entry
+	{
+		std::shared_ptr<nano::block> block;
+		uint64_t source; // Hash of the submitting peer endpoint (0 = local/unknown)
+	};
 	bool should_log ();
 	bool have_blocks_ready ();
 	bool have_blocks ();
@@ -58,11 +66,18 @@ private:
 	void queue_unchecked (nano::write_transaction const &, nano::hash_or_account const &);
 	std::deque<processed_t> process_batch (nano::unique_lock<nano::mutex> &);
 	void process_verified_state_blocks (std::deque<nano::state_block_signature_verification::value_type> &, std::vector<int> const &, std::vector<nano::block_hash> const &, std::vector<nano::signature> const &);
-	void add_impl (std::shared_ptr<nano::block> block);
+	void add_impl (std::shared_ptr<nano::block> block, uint64_t source = 0);
+	std::shared_ptr<nano::block> fair_dequeue (); // Round-robin across sources
 	bool stopped{ false };
 	bool active{ false };
 	std::chrono::steady_clock::time_point next_log;
 	std::deque<std::shared_ptr<nano::block>> blocks;
+	/** Per-source fair sub-queues: source_hash → queue of blocks */
+	std::map<uint64_t, std::deque<std::shared_ptr<nano::block>>> source_queues;
+	/** Round-robin iterator for fair dequeuing */
+	uint64_t last_served_source{ 0 };
+	/** Total count of blocks across all source queues */
+	std::size_t source_queues_size{ 0 };
 	std::deque<std::shared_ptr<nano::block>> forced;
 	nano::condition_variable condition;
 	nano::node & node;

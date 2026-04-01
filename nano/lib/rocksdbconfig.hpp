@@ -23,7 +23,7 @@ public:
 	/** To use RocksDB in tests make sure the environment variable TEST_USE_ROCKSDB=1 is set */
 	static bool using_rocksdb_in_tests ();
 
-	bool enable{ false };
+	bool enable{ true }; // RocksDB is the default backend for new installs
 	uint8_t memory_multiplier{ 2 };
 	unsigned io_threads{ nano::hardware_concurrency () };
 };
