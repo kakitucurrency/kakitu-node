@@ -27,9 +27,9 @@ struct HexTo
 } // namespace
 
 nano::work_thresholds const nano::work_thresholds::publish_full (
-0xffffffc000000000,
-0xfffffff800000000, // 8x higher than epoch_1
-0xfffffe0000000000 // 8x lower than epoch_1
+0xfffff00000000000, // ~64x lower than Nano mainnet (private network)
+0xfffff00000000000, // same as epoch_1 (private network)
+0xffffe00000000000 // 2x lower than epoch_1
 );
 
 nano::work_thresholds const nano::work_thresholds::publish_beta (
@@ -45,9 +45,9 @@ nano::work_thresholds const nano::work_thresholds::publish_dev (
 );
 
 nano::work_thresholds const nano::work_thresholds::publish_test ( // defaults to live network levels
-get_env_threshold_or_default ("KAKITU_TEST_EPOCH_1", 0xffffffc000000000),
-get_env_threshold_or_default ("KAKITU_TEST_EPOCH_2", 0xfffffff800000000), // 8x higher than epoch_1
-get_env_threshold_or_default ("KAKITU_TEST_EPOCH_2_RECV", 0xfffffe0000000000) // 8x lower than epoch_1
+get_env_threshold_or_default ("KAKITU_TEST_EPOCH_1", 0xfffff00000000000),
+get_env_threshold_or_default ("KAKITU_TEST_EPOCH_2", 0xfffff00000000000),
+get_env_threshold_or_default ("KAKITU_TEST_EPOCH_2_RECV", 0xffffe00000000000)
 );
 
 uint64_t nano::work_thresholds::threshold_entry (nano::work_version const version_a, nano::block_type const type_a) const
